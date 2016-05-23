@@ -4,7 +4,7 @@ assword (0.9-1) unstable; urgency=medium
   * bump standards-version to 3.9.8 (no changes needed)
   * move Vcs-* fields for debian packaging to collab-maint on alioth
 
- -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Thu, 12 May 2016 12:19:11 -0400
+ -- Jameson Graef Rollins <jrollins@finestructure.net>  Mon, 23 May 2016 15:20:19 -0700
 
 assword (0.8-2) unstable; urgency=medium
 
