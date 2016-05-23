@@ -9,6 +9,7 @@ all: assword.1
 .PHONY: test
 test:
 	./test/assword-test $(TEST_OPTS)
+	rm -f test/gnupg/S.gpg-agent
 
 assword.1: assword
 	alias assword="python3 -m assword"; \
