@@ -295,7 +295,7 @@ class Gui:
         completion.set_text_column(0)
         completion.set_match_func(_match_func, 0) # 0 is column number
         context_len = 50
-        for context in self.db:
+        for context in sorted(self.db, key=str.lower):
             if len(context) > context_len:
                 context_len = len(context)
             liststore.append([context])
