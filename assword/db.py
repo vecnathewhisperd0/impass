@@ -237,6 +237,6 @@ class Database():
         mset = {}
         for context, entry in self._entries.items():
             # simple substring match
-            if query in context:
+            if not query or query in context:
                 mset[context] = entry
         return mset
