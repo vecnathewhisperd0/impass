@@ -1,5 +1,6 @@
 import os
 import io
+import stat
 import json
 import time
 import gpgme
@@ -216,10 +217,15 @@ class Database():
         encdata = self._encryptDB(cleardata, keyid)
         newpath = path + '.new'
         bakpath = path + '.bak'
+        mode = stat.S_IRUSR | stat.S_IWUSR
         with open(newpath, 'wb') as f:
             f.write(encdata.getvalue())
         if os.path.exists(path):
+            mode = os.stat(path)[stat.ST_MODE]
             os.rename(path, bakpath)
+        # FIXME: shouldn't this be done when we're actually creating
+        # the file?
+        os.chmod(newpath, mode)
         os.rename(newpath, path)
 
     def search(self, query=None):
