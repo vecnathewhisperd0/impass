@@ -11,12 +11,21 @@ test:
 	./test/assword-test $(TEST_OPTS)
 	rm -f test/gnupg/S.gpg-agent
 
-assword.1: assword
-	alias assword="python3 -m assword"; \
-	help2man assword \
+define ASSWORD_TMP
+#!/bin/sh
+PYTHONPATH=.. python3 -m assword "$$@"
+endef
+assword.1: assword assword.1.additional
+	mkdir -p tmp
+	$(file > assword.sh,$(ASSWORD_TMP))
+	mv assword.sh tmp/assword
+	chmod 755 tmp/assword
+	help2man tmp/assword \
 	-N -n 'Simple and secure password management system' \
 	--include=assword.1.additional \
 	-o $@
+	rm tmp/assword
+	rmdir tmp
 
 .PHONY: clean
 clean:
