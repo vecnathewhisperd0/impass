@@ -207,6 +207,8 @@ class Database:
         is called.
 
         """
+        if context not in self:
+            raise DatabaseError("Context '%s' not found" % context)
         del self._entries[context]
 
     def save(self, keyid=None, path=None):
