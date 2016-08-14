@@ -147,7 +147,7 @@ class Database:
         return e
 
     def add(self, context, password=None):
-        """Add a new entry to the database.
+        """Add new entry.
 
         If password is None, one will be generated automatically.  If
         password is an int it will be interpreted as the number of
@@ -167,7 +167,7 @@ class Database:
         return self._set_entry(context, password)
 
     def replace(self, context, password=None):
-        """Replace entry in database.
+        """Replace entry password.
 
         If password is None, one will be generated automatically.  If
         password is an int it will be interpreted as the number of
@@ -185,7 +185,7 @@ class Database:
         return self._set_entry(context, password)
 
     def update(self, old_context, new_context):
-        """Update entry context in database.
+        """Update entry context.
 
         If the old context is not in the db a DatabaseError will be
         raised.
@@ -201,7 +201,7 @@ class Database:
         self.remove(old_context)
 
     def remove(self, context):
-        """Remove an entry from the database.
+        """Remove entry.
 
         Database changes are not saved to disk until the save() method
         is called.
@@ -244,8 +244,8 @@ class Database:
         os.chmod(newpath, mode)
         os.rename(newpath, path)
 
-    def search(self, query=None):
-        """Search for query in contexts.
+    def search(self, string=None):
+        """Search for string in contexts.
 
         If query is None, all entries will be returned.
 
@@ -253,6 +253,6 @@ class Database:
         mset = {}
         for context, entry in self._entries.items():
             # simple substring match
-            if not query or query in context:
+            if not string or string in context:
                 mset[context] = entry
         return mset
