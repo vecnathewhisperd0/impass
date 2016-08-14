@@ -69,14 +69,28 @@ EOF
 test_expect_equal_file OUTPUT EXPECTED
 
 test_expect_code 2 'add existing context' 'assword add foo@bar'
+
 test_expect_code 2 'replace non-existing context' \
     'assword replace aaaa'
+# FIXME: add replacement test
 
+test_expect_code 2 'update non-existing context' \
+    'assword update aaaa'
+test_begin_subtest "update entry"
+assword update foo@bar foo@example
+assword dump foo 2>&1 | sed 's/"date": ".*"/FOO/g' >OUTPUT
+cat <<EOF >EXPECTED
+{
+  "foo@example": {
+    FOO
+  }
+}
+EOF
+test_expect_equal_file OUTPUT EXPECTED
 
 test_expect_code 2 'remove non-existant entry' 'assword remove aaaa'
-
 test_begin_subtest "remove entry"
-echo yes | assword remove foo@bar
+echo yes | assword remove foo@example
 assword dump 2>&1 | sed 's/"date": ".*"/FOO/g' >OUTPUT
 cat <<EOF >EXPECTED
 {

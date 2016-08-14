@@ -42,6 +42,10 @@ Commands:
                      does not exist an error will be thrown. See
                      ASSWORD_PASSWORD for information on passwords.
 
+  update [<old-context> [<new-context>]]
+                     Update an existing context.  If the old context
+                     does not exist an error will be thrown.
+
   dump [<string>]    Dump search results as json.  If string not specified all
                      entries are returned.  Passwords will not be displayed
                      unless ASSWORD_DUMP_PASSWORDS is set.
@@ -316,6 +320,40 @@ def replace(args):
         error(10, 'Assword database error: %s' % e.msg)
     print("Password replaced.", file=sys.stderr)
 
+def update(args):
+    """Update existing context in the database.
+
+    Replace a context while keeping password the same.  If either
+    context is not specified or ':' the user will be prompted for the
+    respective context.
+
+    """
+    parser = argparse.ArgumentParser(prog=PROG+' update',
+                                     description=update.__doc__)
+    parser.add_argument('old_context', nargs='?',
+                        help="existing database context, ':' for prompt, or '-' for stdin")
+    parser.add_argument('new_context', nargs='?',
+                        help="new database context or ':' for prompt")
+    args = parser.parse_args(args)
+
+    keyid = get_keyid()
+    db = open_db(keyid)
+
+    old_context = retrieve_context(args.old_context, prompt='old context: ', db=db)
+    if old_context not in db:
+        error(2, "Context '%s' not found" % old_context)
+
+    new_context = retrieve_context(args.new_context, prompt='new context: ', default=old_context, stdin=False)
+    if new_context in db:
+        error(2, "Context '%s' already exists." % new_context)
+
+    try:
+        db.update(old_context, new_context)
+        db.save()
+    except assword.DatabaseError as e:
+        error(10, 'Assword database error: %s' % e.msg)
+    print("Entry updated.", file=sys.stderr)
+
 def dump(args):
     """Dump password database to stdout as json.
 
@@ -438,6 +476,8 @@ def main():
         add(sys.argv[2:])
     elif cmd == 'replace':
         replace(sys.argv[2:])
+    elif cmd == 'update':
+        update(sys.argv[2:])
     elif cmd == 'dump':
         dump(sys.argv[2:])
     elif cmd == 'gui':

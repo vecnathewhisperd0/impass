@@ -86,6 +86,25 @@ False
 EOF
 test_expect_equal_file OUTPUT EXPECTED
 
+test_begin_subtest "update entry"
+python3 - <<EOF 2>&1 | sed "s|$ASSWORD_DB|ASSWORD_DB|" >OUTPUT
+import assword
+db = assword.Database("$ASSWORD_DB", '$ASSWORD_KEYID')
+p1 = db['aaaa']['password']
+db.update('aaaa', 'bbbb')
+print('aaaa' in db)
+print('bbbb' in db)
+p2 = db['bbbb']['password']
+print(p1 == p2)
+db.save()
+EOF
+cat <<EOF >EXPECTED
+False
+True
+True
+EOF
+test_expect_equal_file OUTPUT EXPECTED
+
 test_begin_subtest "remove entry"
 python3 - <<EOF 2>&1 | sed "s|$ASSWORD_DB|ASSWORD_DB|" >OUTPUT
 import assword
@@ -104,7 +123,7 @@ EOF
 cat <<EOF >EXPECTED
 True
 False
-aaaa
+bbbb
 EOF
 test_expect_equal_file OUTPUT EXPECTED
 
@@ -120,8 +139,8 @@ db.save()
 EOF
 cat <<EOF >EXPECTED
 True
-aaaa
 això
+bbbb
 EOF
 test_expect_equal_file OUTPUT EXPECTED
 

@@ -184,6 +184,22 @@ class Database():
             raise DatabaseError("Context not found (see add())")
         return self._set_entry(context, password)
 
+    def update(self, old_context, new_context):
+        """Update entry context in database.
+
+        If the old context is not in the db a DatabaseError will be
+        raised.
+
+        Database changes are not saved to disk until the save() method
+        is called.
+
+        """
+        if old_context not in self:
+            raise DatabaseError("Context '%s' not found." % old_context)
+        password = self[old_context]['password']
+        self.add(new_context, password)
+        self.remove(old_context)
+
     def remove(self, context):
         """Remove an entry from the database.
 
