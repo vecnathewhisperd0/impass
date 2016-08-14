@@ -22,6 +22,7 @@ assword.1: assword assword.1.additional
 	chmod 755 tmp/assword
 	help2man tmp/assword \
 	-N -n 'Simple and secure password management system' \
+	--version-string=$(VERSION) \
 	--include=assword.1.additional \
 	-o $@
 	rm tmp/assword
