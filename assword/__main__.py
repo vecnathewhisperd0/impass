@@ -5,6 +5,7 @@ import sys
 import json
 import gpgme
 import getpass
+import argparse
 import subprocess
 
 import assword
@@ -163,22 +164,47 @@ def get_keyid():
 
     return keyid
 
-def retrieve_context(args):
-    try:
-        # get context as argument
-        context = args[0]
-        # or from stdin
-        if context == '-':
-            context = sys.stdin.read()
-    # prompt for context if not specified
-    except IndexError:
+class Completer(object):
+    def __init__(self, completions=None):
+        self.completions = completions or []
+    def completer(self, text, index):
+        matching = [
+            c for c in self.completions if c.startswith(text)
+            ]
         try:
-            context = input('context: ')
-        except KeyboardInterrupt:
-            sys.exit(-1)
-    if context == '':
-        sys.exit("Can not add empty string context.")
-    return context
+            return matching[index]
+        except IndexError:
+            return None
+
+def input_complete(prompt, completions=None):
+    try:
+        # lifted from magic-wormhole/codes.py
+        import readline
+        c = Completer(completions)
+        if "libedit" in readline.__doc__:
+            readline.parse_and_bind("bind ^I rl_complete")
+        else:
+            readline.parse_and_bind("tab: complete")
+        readline.set_completer(c.completer)
+        readline.set_completer_delims(' ')
+    except ImportError:
+        pass
+    try:
+        return input(prompt)
+    except KeyboardInterrupt:
+        error(-1)
+
+def retrieve_context(arg, stdin=True, db=None):
+    if arg == '-' and stdin:
+        context = sys.stdin.read()
+    elif arg in [':', None]:
+        if db:
+            context = input_complete('context: ', [c for c in db])
+        else:
+            context = input_complete('context: ')
+    else:
+        context = arg
+    return context.strip()
 
 def retrieve_password():
     # get password from prompt if requested
@@ -203,44 +229,82 @@ def retrieve_password():
 ############################################################
 # command functions
 
-# Add a password to the database.
-# First argument is potentially a context.
 def add(args):
+    """Add a password to the database.
+
+    If context is '-' read from stdin.  If context is ':' or not
+    specified the user will be prompted.  If the context already
+    exists an error will be thrown.  See ASSWORD_PASSWORD for
+    information on passwords.
+
+    """
+    parser = argparse.ArgumentParser(prog=PROG+' add',
+                                     description=add.__doc__)
+    parser.add_argument('context', nargs='?',
+                        help="existing database context, or ':' for prompt, or '-' for stdin")
+    args = parser.parse_args(args)
+
     keyid = get_keyid()
-    context = retrieve_context(args)
     db = open_db(keyid, create=True)
+
+    context = retrieve_context(args.context)
     if context in db:
         error(2, "Context '%s' already exists.")
 
     password = retrieve_password()
     try:
-        db.add(context.strip(), password)
+        db.add(context, password)
         db.save()
     except assword.DatabaseError as e:
         error(10, 'Assword database error: %s' % e.msg)
     print("New entry writen.", file=sys.stderr)
 
-# Replace a password in the database.
-# First argument is context to replace.
 def replace(args):
+    """Replace a password in the database.
+
+    If context is '-' read from stdin.  If context is ':' or not
+    specified the user will be prompted.  If the context does not
+    already exist an error will be thrown.  See ASSWORD_PASSWORD for
+    information on passwords.
+
+    """
+    parser = argparse.ArgumentParser(prog=PROG+' replace',
+                                     description=replace.__doc__)
+    parser.add_argument('context', nargs='?',
+                        help="existing database context, or ':' for prompt, or '-' for stdin")
+    args = parser.parse_args(args)
+
     keyid = get_keyid()
-    context = retrieve_context(args)
     db = open_db(keyid)
+
+    context = retrieve_context(args.context, db=db)
     if context not in db:
         error(2, "Context '%s' not found." % (context))
 
     password = retrieve_password()
     try:
-        db.replace(context.strip(), password)
+        db.replace(context, password)
         db.save()
     except assword.DatabaseError as e:
         error(10, 'Assword database error: %s' % e.msg)
     print("Password replaced.", file=sys.stderr)
 
 def dump(args):
-    query = ' '.join(args)
+    """Dump password database to stdout as json.
+
+    If a string is provide only entries whose context contains the
+    string will be dumped.  Otherwise all entries are returned.
+    Passwords will not be displayed unless ASSWORD_DUMP_PASSWORDS is
+    set.
+
+    """
+    parser = argparse.ArgumentParser(prog=PROG+' dump',
+                                     description=remove.__doc__)
+    parser.add_argument('string', nargs='?',
+                        help="substring match for contexts")
+    args = parser.parse_args(args)
     db = open_db()
-    results = db.search(query)
+    results = db.search(args.string)
     output = {}
     for context in results:
         output[context] = {}
@@ -249,8 +313,25 @@ def dump(args):
             output[context]['password'] = results[context]['password']
     print(json.dumps(output, sort_keys=True, indent=2))
 
-# The X GUI
 def gui(args, method='xdo'):
+    """Launch minimal X GUI.
+
+    Good for X11 window manager integration.  Upon invocation the user
+    will be prompted to decrypt the database, after which a graphical
+    search prompt will be presented.  If an additional string is
+    provided, it will be added as the initial search string.  All
+    matching results for the query will be presented to the user.
+    When a result is selected, the password will be retrieved
+    according to the method specified by ASSWORD_XPASTE.  If no match
+    is found, the user has the opportunity to generate and store a new
+    password, which is then delivered via ASSWORD_XPASTE.
+
+    """
+    parser = argparse.ArgumentParser(prog=PROG+' gui',
+                                     description=remove.__doc__)
+    parser.add_argument('string', nargs='?',
+                        help="substring match for contexts")
+    args = parser.parse_args(args)
     from assword.gui import Gui
     if method == 'xdo':
         try:
@@ -266,10 +347,9 @@ Please install python3-xdo.""")
         pass
     else:
         error(1, "Unknown X paste method '%s'." % method)
-    query = ' '.join(args)
     keyid = get_keyid()
     db = open_db(keyid)
-    result = Gui(db, query=query).returnValue()
+    result = Gui(db, query=args.string).returnValue()
     # type the password in the saved window
     if result:
         if method == 'xdo':
@@ -280,13 +360,23 @@ Please install python3-xdo.""")
             xclip(result['password'])
 
 def remove(args):
+    """Remove password from database.
+
+    If context is '-' read from stdin.  If context is ':' or not
+    specified the user will be prompted.  If the context does not
+    already exist an error will be thrown.
+
+    """
+    parser = argparse.ArgumentParser(prog=PROG+' remove',
+                                     description=remove.__doc__)
+    parser.add_argument('context', nargs='?',
+                        help="existing database context, or ':' for prompt, or '-' for stdin")
+    args = parser.parse_args(args)
+
     keyid = get_keyid()
-    try:
-        context = args[0]
-    except IndexError:
-        print("Must specify index to remove.", file=sys.stderr)
-        sys.exit(1)
     db = open_db(keyid)
+
+    context = retrieve_context(args.context, db=db)
     if context not in db:
         error(2, "Context '%s' not found." % (context))
 
