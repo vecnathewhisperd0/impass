@@ -168,7 +168,7 @@ def get_keyid():
 
     return keyid
 
-class Completer(object):
+class Completer:
     def __init__(self, completions=None):
         self.completions = completions or []
     def completer(self, text, index):

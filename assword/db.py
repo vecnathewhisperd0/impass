@@ -26,7 +26,7 @@ class DatabaseError(Exception):
     def __str__(self):
         return repr(self.msg)
 
-class Database():
+class Database:
     """An Assword database."""
 
     def __init__(self, dbpath=None, keyid=None):
