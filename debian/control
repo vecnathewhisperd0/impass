@@ -1,5 +1,5 @@
 Source: assword
-Section: python
+Section: utils
 Priority: optional
 Maintainer: Jameson Graef Rollins <jrollins@finestructure.net>
 Uploaders: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
