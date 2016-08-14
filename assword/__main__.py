@@ -206,17 +206,35 @@ def retrieve_context(arg, stdin=True, db=None):
         context = arg
     return context.strip()
 
-def retrieve_password():
-    # get password from prompt if requested
-    if os.getenv('ASSWORD_PASSWORD') is None:
-        return None
-    elif os.getenv('ASSWORD_PASSWORD') != 'prompt':
-        try:
-            octets = int(os.getenv('ASSWORD_PASSWORD'))
-        except ValueError:
-            sys.exit("ASSWORD_PASSWORD environment variable is neither int or 'prompt'.")
+class PasswordAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if not os.getenv('ASSWORD_PASSWORD'):
+            password = None
+        elif os.getenv('ASSWORD_PASSWORD') in ['prompt',':']:
+            password = ':'
+        else:
+            try:
+                password = int(os.getenv('ASSWORD_PASSWORD'))
+            except ValueError:
+                error(1, "ASSWORD_PASSWORD environment variable is neither int nor 'prompt'.")
+        # print('%s %s %s' % (parser, namespace, values))
+        if values == ':':
+            password = ':'
+        elif values:
+            try:
+                password = int(values)
+            except ValueError:
+                error(666, "Don't type your password on the command line!!!")
+        setattr(namespace, self.dest, password)
+
+def retrieve_password(pwspec):
+    if pwspec == ':':
+        return input_password()
+    else:
         print("Auto-generating password...", file=sys.stderr)
-        return octets
+        return pwspec
+
+def input_password():
     try:
         password0 = getpass.getpass('password: ')
         password1 = getpass.getpass('reenter password: ')
@@ -242,6 +260,8 @@ def add(args):
                                      description=add.__doc__)
     parser.add_argument('context', nargs='?',
                         help="existing database context, or ':' for prompt, or '-' for stdin")
+    parser.add_argument('pwspec', nargs='?', action=PasswordAction,
+                        help="password spec: N octets or ':' for prompt")
     args = parser.parse_args(args)
 
     keyid = get_keyid()
@@ -251,7 +271,8 @@ def add(args):
     if context in db:
         error(2, "Context '%s' already exists.")
 
-    password = retrieve_password()
+    password = retrieve_password(args.pwspec)
+
     try:
         db.add(context, password)
         db.save()
@@ -272,6 +293,8 @@ def replace(args):
                                      description=replace.__doc__)
     parser.add_argument('context', nargs='?',
                         help="existing database context, or ':' for prompt, or '-' for stdin")
+    parser.add_argument('pwspec', nargs='?', action=PasswordAction,
+                        help="password spec: N octets or ':' for prompt")
     args = parser.parse_args(args)
 
     keyid = get_keyid()
@@ -281,7 +304,8 @@ def replace(args):
     if context not in db:
         error(2, "Context '%s' not found." % (context))
 
-    password = retrieve_password()
+    password = retrieve_password(args.pwspec)
+
     try:
         db.replace(context, password)
         db.save()
