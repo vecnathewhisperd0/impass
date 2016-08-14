@@ -176,17 +176,20 @@ class Completer(object):
         except IndexError:
             return None
 
-def input_complete(prompt, completions=None):
+def input_complete(prompt, completions=None, default=None):
     try:
         # lifted from magic-wormhole/codes.py
         import readline
         c = Completer(completions)
+        readline.set_startup_hook()
         if "libedit" in readline.__doc__:
             readline.parse_and_bind("bind ^I rl_complete")
         else:
             readline.parse_and_bind("tab: complete")
         readline.set_completer(c.completer)
         readline.set_completer_delims(' ')
+        if default:
+            readline.set_startup_hook(lambda: readline.insert_text(default))
     except ImportError:
         pass
     try:
@@ -194,14 +197,14 @@ def input_complete(prompt, completions=None):
     except KeyboardInterrupt:
         error(-1)
 
-def retrieve_context(arg, stdin=True, db=None):
+def retrieve_context(arg, prompt='context: ', default=None, stdin=True, db=None):
     if arg == '-' and stdin:
         context = sys.stdin.read()
     elif arg in [':', None]:
         if db:
-            context = input_complete('context: ', [c for c in db])
+            context = input_complete(prompt, completions=[c for c in db], default=default)
         else:
-            context = input_complete('context: ')
+            context = input_complete(prompt, default=default)
     else:
         context = arg
     return context.strip()
