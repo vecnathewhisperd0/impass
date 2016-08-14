@@ -249,7 +249,7 @@ See 'assword help' for more information.""", file=sys.stderr)
 
 # The X GUI
 def gui(args, method='xdo'):
-    query = ' '.join(args)
+    from assword.gui import Gui
     if method == 'xdo':
         try:
             import xdo
@@ -266,10 +266,10 @@ def gui(args, method='xdo'):
     else:
         print("Unknown X paste method:", method, file=sys.stderr)
         sys.exit(1)
-    # do it
+    query = ' '.join(args)
     keyid = get_keyid()
     db = open_db(keyid)
-    result = assword.Gui(db, query=query).returnValue()
+    result = Gui(db, query=query).returnValue()
     # type the password in the saved window
     if result:
         if method == 'xdo':
