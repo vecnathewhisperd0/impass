@@ -266,7 +266,7 @@ def add(args):
     parser = argparse.ArgumentParser(prog=PROG+' add',
                                      description=add.__doc__)
     parser.add_argument('context', nargs='?',
-                        help="existing database context, or ':' for prompt, or '-' for stdin")
+                        help="existing database context, ':' for prompt, or '-' for stdin")
     parser.add_argument('pwspec', nargs='?', action=PasswordAction,
                         help="password spec: N octets or ':' for prompt")
     args = parser.parse_args(args)
@@ -299,7 +299,7 @@ def replace(args):
     parser = argparse.ArgumentParser(prog=PROG+' replace',
                                      description=replace.__doc__)
     parser.add_argument('context', nargs='?',
-                        help="existing database context, or ':' for prompt, or '-' for stdin")
+                        help="existing database context, ':' for prompt, or '-' for stdin")
     parser.add_argument('pwspec', nargs='?', action=PasswordAction,
                         help="password spec: N octets or ':' for prompt")
     args = parser.parse_args(args)
@@ -435,7 +435,7 @@ def remove(args):
     parser = argparse.ArgumentParser(prog=PROG+' remove',
                                      description=remove.__doc__)
     parser.add_argument('context', nargs='?',
-                        help="existing database context, or ':' for prompt, or '-' for stdin")
+                        help="existing database context, ':' for prompt, or '-' for stdin")
     args = parser.parse_args(args)
 
     keyid = get_keyid()
