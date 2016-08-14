@@ -102,22 +102,25 @@ def xclip(text):
 ############################################################
 # Return codes:
 # 1 command/load line error
+# 2 context/password invalid
 # 5 db doesn't exist
 # 10 db error
 # 20 gpg/key error
 ############################################################
+def error(code, msg=''):
+    if msg:
+        print(msg, file=sys.stderr)
+    sys.exit(code)
 
 def open_db(keyid=None, create=False):
     if not create and not os.path.exists(DBPATH):
-        print("""Assword database does not exist.
+        error(5, """Assword database does not exist.
 To add an entry to the database use 'assword add'.
-See 'assword help' for more information.""", file=sys.stderr)
-        sys.exit(5)
+See 'assword help' for more information.""")
     try:
         db = assword.Database(DBPATH, keyid)
     except assword.DatabaseError as e:
-        print('Assword database error: %s' % e.msg, file=sys.stderr)
-        sys.exit(10)
+        error(10, 'Assword database error: %s' % e.msg)
     if db.sigvalid is False:
         print("WARNING: could not validate OpenPGP signature on db file.", file=sys.stderr)
     return db
@@ -142,7 +145,7 @@ def get_keyid():
             save = True
 
     if not keyid:
-        sys.exit(20)
+        error(20)
 
     try:
         gpg = gpgme.Context()
@@ -150,7 +153,7 @@ def get_keyid():
     except gpgme.GpgmeError as e:
         print("GPGME error for key ID %s:" % keyid, file=sys.stderr)
         print("  %s" % e, file=sys.stderr)
-        sys.exit(20)
+        error(20)
 
     if save:
         if not os.path.isdir(os.path.dirname(keyfile)):
@@ -192,10 +195,10 @@ def retrieve_password():
         password0 = getpass.getpass('password: ')
         password1 = getpass.getpass('reenter password: ')
         if password0 != password1:
-            sys.exit("Passwords do not match.  Aborting.")
+            error(2, "Passwords do not match.  Aborting.")
         return password0
     except KeyboardInterrupt:
-        sys.exit(-1)
+        error(-1)
 
 ############################################################
 # command functions
@@ -207,15 +210,14 @@ def add(args):
     context = retrieve_context(args)
     db = open_db(keyid, create=True)
     if context in db:
-        print("Entry already exists with context: '%s'" % (context), file=sys.stderr)
-        sys.exit(1)
+        error(2, "Context '%s' already exists.")
+
     password = retrieve_password()
     try:
         db.add(context.strip(), password)
         db.save()
     except assword.DatabaseError as e:
-        print('Assword database error: %s' % e.msg, file=sys.stderr)
-        sys.exit(10)
+        error(10, 'Assword database error: %s' % e.msg)
     print("New entry writen.", file=sys.stderr)
 
 # Replace a password in the database.
@@ -225,16 +227,15 @@ def replace(args):
     context = retrieve_context(args)
     db = open_db(keyid)
     if context not in db:
-        print("Context not found: '%s'" % (context), file=sys.stderr)
-        sys.exit(1)
+        error(2, "Context '%s' not found." % (context))
+
     password = retrieve_password()
     try:
         db.replace(context.strip(), password)
         db.save()
     except assword.DatabaseError as e:
-        print('Assword database error: %s' % e.msg, file=sys.stderr)
-        sys.exit(10)
-    print("New entry writen.", file=sys.stderr)
+        error(10, 'Assword database error: %s' % e.msg)
+    print("Password replaced.", file=sys.stderr)
 
 def dump(args):
     query = ' '.join(args)
@@ -255,9 +256,8 @@ def gui(args, method='xdo'):
         try:
             import xdo
         except:
-            print("The xdo module is not found, so the 'xdo' paste method is not available.", file=sys.stderr)
-            print("Please install python3-xdo.", file=sys.stderr)
-            sys.exit(1)
+            error(1, """The xdo module is not found, so the 'xdo' paste method is not available.
+Please install python3-xdo.""")
         # initialize xdo
         x = xdo.xdo()
         # get the id of the currently focused window
@@ -265,8 +265,7 @@ def gui(args, method='xdo'):
     elif method == 'xclip':
         pass
     else:
-        print("Unknown X paste method:", method, file=sys.stderr)
-        sys.exit(1)
+        error(1, "Unknown X paste method '%s'." % method)
     query = ' '.join(args)
     keyid = get_keyid()
     db = open_db(keyid)
@@ -289,21 +288,21 @@ def remove(args):
         sys.exit(1)
     db = open_db(keyid)
     if context not in db:
-        print("No entry with context: '%s'" % (context), file=sys.stderr)
-        sys.exit(1)
+        error(2, "Context '%s' not found." % (context))
+
     try:
         print("Really remove entry '%s'?" % (context), file=sys.stderr)
         response = input("Type 'yes' to remove: ")
     except KeyboardInterrupt:
-        sys.exit(-1)
+        error(-1)
     if response != 'yes':
-        sys.exit(-1)
+        error(-1)
+
     try:
         db.remove(context)
         db.save()
     except assword.DatabaseError as e:
-        print('Assword database error: %s' % e.msg, file=sys.stderr)
-        sys.exit(10)
+        error(10, 'Assword database error: %s' % e.msg)
     print("Entry removed.", file=sys.stderr)
 
 ############################################################
@@ -314,7 +313,7 @@ def main():
         print("Command not specified.", file=sys.stderr)
         print(file=sys.stderr)
         usage()
-        sys.exit(1)
+        error(1)
 
     cmd = sys.argv[1]
 
@@ -338,7 +337,7 @@ def main():
         print("Unknown command:", cmd, file=sys.stderr)
         print(file=sys.stderr)
         usage()
-        sys.exit(1)
+        error(1)
 
 if __name__ == "__main__":
     main()
