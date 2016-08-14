@@ -102,11 +102,17 @@ def xclip(text):
 ############################################################
 # Return codes:
 # 1 command/load line error
+# 5 db doesn't exist
 # 10 db error
 # 20 gpg/key error
 ############################################################
 
-def open_db(keyid=None):
+def open_db(keyid=None, create=False):
+    if not create and not os.path.exists(DBPATH):
+        print("""Assword database does not exist.
+To add an entry to the database use 'assword add'.
+See 'assword help' for more information.""", file=sys.stderr)
+        sys.exit(5)
     try:
         db = assword.Database(DBPATH, keyid)
     except assword.DatabaseError as e:
@@ -199,7 +205,7 @@ def retrieve_password():
 def add(args):
     keyid = get_keyid()
     context = retrieve_context(args)
-    db = open_db(keyid)
+    db = open_db(keyid, create=True)
     if context in db:
         print("Entry already exists with context: '%s'" % (context), file=sys.stderr)
         sys.exit(1)
@@ -232,11 +238,6 @@ def replace(args):
 
 def dump(args):
     query = ' '.join(args)
-    if not os.path.exists(DBPATH):
-        print("""Assword database does not exist.
-To add an entry to the database use 'assword add'.
-See 'assword help' for more information.""", file=sys.stderr)
-        sys.exit(10)
     db = open_db()
     results = db.search(query)
     output = {}
