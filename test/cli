@@ -6,7 +6,7 @@ test_description='cli'
 
 ################################################################
 
-test_expect_code 10 'dump non-existant db' \
+test_expect_code 5 'dump non-existant db' \
     'assword dump'
 
 test_expect_success 'add first entry' \
@@ -15,7 +15,7 @@ test_expect_success 'add first entry' \
 test_expect_success 'add second entry' \
     "assword add 'baz asdf Dokw okb 32438uoijdf'"
 
-test_expect_code 1 'add existing context' \
+test_expect_code 2 'add existing context' \
     'assword add foo@bar'
 
 test_begin_subtest "dump all entries"
@@ -68,12 +68,12 @@ cat <<EOF >EXPECTED
 EOF
 test_expect_equal_file OUTPUT EXPECTED
 
-test_expect_code 1 'add existing context' 'assword add foo@bar'
-test_expect_code 1 'replace non-existing context' \
+test_expect_code 2 'add existing context' 'assword add foo@bar'
+test_expect_code 2 'replace non-existing context' \
     'assword replace aaaa'
 
 
-test_expect_code 1 'remove non-existant entry' 'assword remove aaaa'
+test_expect_code 2 'remove non-existant entry' 'assword remove aaaa'
 
 test_begin_subtest "remove entry"
 echo yes | assword remove foo@bar
