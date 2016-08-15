@@ -1,3 +1,10 @@
+assword (0.10-1) UNRELEASED; urgency=high
+
+  * New upstream release (Closes: #739820, #825365)
+  * Change section to 'utils' (Closes: #832186)
+
+ -- Jameson Graef Rollins <jrollins@finestructure.net>  Mon, 15 Aug 2016 00:49:28 -0700
+
 assword (0.9-1) unstable; urgency=medium
 
   * new upstream release (converted to python3)

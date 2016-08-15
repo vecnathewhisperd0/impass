@@ -6,12 +6,11 @@ Uploaders: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 Build-Depends:
  debhelper (>= 9),
  dh-python,
- help2man,
  pkg-config,
  python3,
- python3-gi,
  python3-gpgme,
  python3-setuptools,
+ txt2man,
 Standards-Version: 3.9.8
 Homepage: https://finestructure.net/assword
 Vcs-Git: https://anonscm.debian.org/git/collab-maint/assword.git
