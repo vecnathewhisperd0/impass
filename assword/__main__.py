@@ -49,6 +49,8 @@ To add an entry to the database use 'assword add'.
 See 'assword help' for more information.""")
     try:
         db = assword.Database(DBPATH, keyid)
+    except gpgme.GpgmeError as e:
+        error(20, 'Decryption error: %s' % (e))
     except assword.DatabaseError as e:
         error(10, 'Assword database error: %s' % e.msg)
     if db.sigvalid is False:

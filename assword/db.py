@@ -58,8 +58,6 @@ class Database:
                 jsondata = json.loads(cleardata.getvalue().decode('utf-8'))
             except IOError as e:
                 raise DatabaseError(e)
-            except gpgme.GpgmeError as e:
-                raise DatabaseError('Decryption error: %s' % (e[2]))
 
             # unpack the json data
             if 'type' not in jsondata or jsondata['type'] != self._type:
