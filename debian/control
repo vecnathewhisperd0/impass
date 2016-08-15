@@ -2,7 +2,8 @@ Source: assword
 Section: utils
 Priority: optional
 Maintainer: Jameson Graef Rollins <jrollins@finestructure.net>
-Uploaders: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+Uploaders:
+ Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
 Build-Depends:
  debhelper (>= 9),
  dh-python,
@@ -20,8 +21,14 @@ Package: assword
 Provides:
  python3-assword,
 Architecture: all
-Depends: python3-gi, python3-gpgme, ${misc:Depends}, ${python3:Depends}
-Recommends: python3-xdo, xclip
+Depends:
+ python3-gi,
+ python3-gpgme,
+ ${misc:Depends},
+ ${python3:Depends},
+Recommends:
+ python3-xdo,
+ xclip,
 Description: Simple and secure password management and retrieval system.
  Assword is a secure password manager that relies on your OpenPGP key
  for security and is designed to integrate in a minimal fashion into
