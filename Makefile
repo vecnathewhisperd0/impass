@@ -12,11 +12,9 @@ test:
 	rm -f test/gnupg/S.gpg-agent
 
 assword.1: assword
-	alias assword="python3 -m assword"; \
-	help2man assword \
-	-N -n 'Simple and secure password management system' \
-	--include=assword.1.additional \
-	-o $@
+	PYTHONPATH=. python3 -m assword help \
+	| txt2man -t assword -r 'assword $(VERSION)' -s 1 \
+	> assword.1
 
 .PHONY: clean
 clean:
