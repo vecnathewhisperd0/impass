@@ -3,7 +3,7 @@ import io
 import stat
 import json
 import time
-import gpgme
+import pyme
 import codecs
 import datetime
 
@@ -47,7 +47,7 @@ class Database:
         self._version = 1
         self._entries = {}
 
-        self._gpg = gpgme.Context()
+        self._gpg = pyme.Context()
         self._gpg.armor = True
         self._sigvalid = None
 
@@ -55,7 +55,7 @@ class Database:
             try:
                 cleardata = self._decryptDB(self._dbpath)
                 # FIXME: trap exception if json corrupt
-                jsondata = json.loads(cleardata.getvalue().decode('utf-8'))
+                jsondata = json.loads(cleardata.decode('utf-8'))
             except IOError as e:
                 raise DatabaseError(e)
 
@@ -100,36 +100,27 @@ class Database:
             with open(path, 'rb') as f:
                 encdata.write(f.read())
                 encdata.seek(0)
-                sigs = self._gpg.decrypt_verify(encdata, data)
+                data, _, vfy = self._gpg.decrypt(encdata)
         # check signature
-        if not sigs[0].validity >= gpgme.VALIDITY_FULL:
+        if not vfy.signatures[0].validity >= pyme.constants.VALIDITY_FULL:
             self._sigvalid = False
         else:
             self._sigvalid = True
-        data.seek(0)
         return data
 
     def _encryptDB(self, data, keyid):
         # The signer and the recipient are assumed to be the same.
         # FIXME: should these be separated?
         try:
-            recipient = self._gpg.get_key(keyid or self._keyid)
-            signer = self._gpg.get_key(keyid or self._keyid)
+            recipient = self._gpg.get_key(keyid or self._keyid, secret=False)
+            signer = self._gpg.get_key(keyid or self._keyid, secret=False)
         except:
             raise DatabaseError('Could not retrieve GPG encryption key.')
-        flags = gpgme.ENCRYPT_ALWAYS_TRUST
-        try:
-            flags |= gpgme.ENCRYPT_NO_COMPRESS
-        except AttributeError:
-            pass
         self._gpg.signers = [signer]
-        encdata = io.BytesIO()
         data.seek(0)
-        sigs = self._gpg.encrypt_sign([recipient],
-                                      flags,
-                                      data,
-                                      encdata)
-        encdata.seek(0)
+        encdata, _, _ = self._gpg.encrypt(data, [recipient],
+                                          always_trust=True,
+                                          compress=False)
         return encdata
 
     def _set_entry(self, context, password=None):
@@ -235,7 +226,7 @@ class Database:
         bakpath = path + '.bak'
         mode = stat.S_IRUSR | stat.S_IWUSR
         with open(newpath, 'wb') as f:
-            f.write(encdata.getvalue())
+            f.write(encdata)
         if os.path.exists(path):
             mode = os.stat(path)[stat.ST_MODE]
             os.rename(path, bakpath)
