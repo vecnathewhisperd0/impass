@@ -484,7 +484,7 @@ ENVIRONMENT
 
 AUTHOR
     Jameson Graef Rollins <jrollins@finestructure.net>
-    Daniel Kahn Gillmore <dkg@fifthhorseman.net>
+    Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 """.format(synopsis=synopsis,
            cmds=format_commands(man=True),
            octets=assword.DEFAULT_NEW_PASSWORD_OCTETS).strip())
