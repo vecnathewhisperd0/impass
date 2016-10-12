@@ -1,4 +1,4 @@
-assword (0.10-1) UNRELEASED; urgency=high
+assword (0.10~rc0-1) UNRELEASED; urgency=high
 
   * New upstream release (Closes: #739820, #825365)
   * Change section to 'utils' (Closes: #832186)
