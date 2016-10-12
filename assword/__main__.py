@@ -487,7 +487,7 @@ AUTHOR
     Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 """.format(synopsis=synopsis,
            cmds=format_commands(man=True),
-           octets=assword.DEFAULT_NEW_PASSWORD_OCTETS).strip())
+           octets=assword.db.DEFAULT_NEW_PASSWORD_OCTETS).strip())
 
 def format_commands(man=False):
     prefix = ' '*8
