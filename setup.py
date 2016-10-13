@@ -39,7 +39,7 @@ setup(
         'Operating System :: POSIX',
         'Programming Language :: Python :: 3 :: Only'],
     install_requires = [
-        'pygpgme',
+        'pyme3',
         'PyGobject',
         ],
     # You can install this optional dependency using the following syntax:
