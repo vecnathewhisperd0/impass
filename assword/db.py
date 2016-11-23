@@ -3,7 +3,7 @@ import io
 import stat
 import json
 import time
-import pyme
+import gpg
 import codecs
 import datetime
 
@@ -47,7 +47,7 @@ class Database:
         self._version = 1
         self._entries = {}
 
-        self._gpg = pyme.Context()
+        self._gpg = gpg.Context()
         self._gpg.armor = True
         self._sigvalid = None
 
@@ -102,7 +102,7 @@ class Database:
                 encdata.seek(0)
                 data, _, vfy = self._gpg.decrypt(encdata)
         # check signature
-        if not vfy.signatures[0].validity >= pyme.constants.VALIDITY_FULL:
+        if not vfy.signatures[0].validity >= gpg.constants.VALIDITY_FULL:
             self._sigvalid = False
         else:
             self._sigvalid = True

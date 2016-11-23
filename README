@@ -48,7 +48,7 @@ Clone the repo:
 
 Dependencies :
   * python3
-  * python3-pyme - Python bindings for the GPGME library
+  * python3-gpg - Python bindings for the GPGME library
   * python3-gtk2 - Python bindings for the GTK+ widget set
   * python3-pkg-resources - Package Discovery and Resource Access
 
@@ -71,7 +71,7 @@ Then:
 
     $ sudo apt-get install build-essential devscripts pkg-config python3-all-dev python3-setuptools debhelper dpkg-dev fakeroot
     $ make debian-snapshot
-    $ sudo apt-get install python3-pyme python3-gi python3-pkg-resources python3-xdo xclip
+    $ sudo apt-get install python3-gpg python3-gi python3-pkg-resources python3-xdo xclip
     $ sudo dpkg -i build/assword_0.*_amd64.deb
 
 
