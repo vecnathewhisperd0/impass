@@ -4,7 +4,7 @@ import os
 import io
 import sys
 import json
-import pyme
+import gpg
 import getpass
 import argparse
 import textwrap
@@ -49,7 +49,7 @@ To add an entry to the database use 'assword add'.
 See 'assword help' for more information.""")
     try:
         db = assword.Database(DBPATH, keyid)
-    except pyme.errors.GPGMEError as e:
+    except gpg.errors.GPGMEError as e:
         error(20, 'Decryption error: %s' % (e))
     except assword.DatabaseError as e:
         error(10, 'Assword database error: %s' % e.msg)
@@ -80,9 +80,9 @@ def get_keyid():
         error(20)
 
     try:
-        gpg = pyme.Context()
-        gpg.get_key(keyid, secret=False)
-    except pyme.errors.GPGMEError as e:
+        gpgctx = gpg.Context()
+        gpgctx.get_key(keyid, secret=False)
+    except gpg.errors.GPGMEError as e:
         print("GPGME error for key ID %s:" % keyid, file=sys.stderr)
         print("  %s" % e, file=sys.stderr)
         error(20)
