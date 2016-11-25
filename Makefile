@@ -16,6 +16,9 @@ assword.1: assword
 	| txt2man -t assword -r 'assword $(VERSION)' -s 1 \
 	> assword.1
 
+version:
+	echo "__version__ = '$(VERSION)'" >assword/version.py
+
 .PHONY: clean
 clean:
 	rm -f assword.1
