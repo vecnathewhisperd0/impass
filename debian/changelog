@@ -1,8 +1,8 @@
-assword (0.10~rc2-1) unstable; urgency=medium
+assword (0.10-1) unstable; urgency=medium
 
   * converted from python3-pyme to python3-gpg
 
- -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Wed, 23 Nov 2016 01:55:07 -0500
+ -- Jameson Graef Rollins <jrollins@finestructure.net>  Fri, 25 Nov 2016 12:18:03 -0800
 
 assword (0.10~rc1-1) unstable; urgency=medium
 
