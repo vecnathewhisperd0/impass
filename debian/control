@@ -22,11 +22,12 @@ Provides:
  python3-assword,
 Architecture: all
 Depends:
- python3-gi,
  python3-gpg,
  ${misc:Depends},
  ${python3:Depends},
 Recommends:
+ gir1.2-gtk-3.0,
+ python3-gi,
  python3-xdo,
  xclip,
 Description: Simple and secure password management and retrieval system

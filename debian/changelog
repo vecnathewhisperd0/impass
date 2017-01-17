@@ -1,3 +1,9 @@
+assword (0.10-2) unstable; urgency=medium
+
+  * add Recommends on gir1.2-gtk-3.0 (Closes: #851637)
+
+ -- Jameson Graef Rollins <jrollins@finestructure.net>  Tue, 17 Jan 2017 10:05:53 -0800
+
 assword (0.10-1) unstable; urgency=medium
 
   * converted from python3-pyme to python3-gpg
