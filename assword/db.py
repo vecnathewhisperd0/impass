@@ -133,7 +133,7 @@ class Database:
                 bytes = password
             password = pwgen(bytes)
         e = {'password': password,
-             'date': datetime.datetime.now().isoformat()}
+             'date': datetime.datetime.utcnow().isoformat() + 'Z'}
         self._entries[context] = e
         return e
 
