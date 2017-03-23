@@ -18,6 +18,20 @@ _gui_layout = '''<?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
+  <object class="GtkMenu" id="emitmenu">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="halign">end</property>
+    <child>
+      <object class="GtkImageMenuItem" id="deletemenuitem">
+        <property name="label">gtk-delete</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="use_underline">True</property>
+        <property name="use_stock">True</property>
+      </object>
+    </child>
+  </object>
   <object class="GtkWindow" id="assword-gui">
     <property name="can_focus">False</property>
     <property name="border_width">4</property>
@@ -108,6 +122,18 @@ _gui_layout = '''<?xml version="1.0" encoding="UTF-8"?>
                 <property name="position">1</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkMenuButton" id="simplemenubtn">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -130,7 +156,7 @@ class Gui:
 +--------------------------------------------------+
 |                    description                   |
 +----------------- simplebox ----------------------+
-| [_simplectxentry___________________] <simplebtn> |
+| [_simplectxentry____] <simplebtn> <simplemenubtn>|
 +--------------------------------------------------+
 '''
         self.db = db
@@ -161,6 +187,8 @@ class Gui:
         self.window = self.builder.get_object('assword-gui')
         self.entry = self.builder.get_object('simplectxentry')
         self.simplebtn = self.builder.get_object('simplebtn')
+        self.simplemenubtn = self.builder.get_object('simplemenubtn')
+        self.emitmenu = self.builder.get_object('emitmenu')
         self.warning = self.builder.get_object('warning')
 
         if self.db.sigvalid is False:
@@ -183,6 +211,7 @@ class Gui:
         self.entry.connect("changed", self.update_simple_context_entry)
         self.entry.connect("populate-popup", self.simple_ctx_popup)
         self.simplebtn.connect("clicked", self.simpleclicked)
+        self.builder.get_object('deletemenuitem').connect("activate", self.deleteclicked)
 
         if query:
             self.entry.set_text(query)
@@ -199,12 +228,15 @@ class Gui:
         if sctx in self.db:
             self.simplebtn.set_label("Emit")
             self.simplebtn.set_sensitive(True)
+            self.simplemenubtn.set_popup(self.emitmenu)
         elif sctx is None or sctx == '':
             self.simplebtn.set_label("Emit")
             self.simplebtn.set_sensitive(False)
+            self.simplemenubtn.set_popup(None)
         else:
             self.simplebtn.set_label("Create")
             self.simplebtn.set_sensitive(True)
+            self.simplemenubtn.set_popup(None)
 
     def add_to_menu(self, menu, name, onclicked, position):
         x = Gtk.MenuItem(label=name)
@@ -216,12 +248,13 @@ class Gui:
         sctx = self.entry.get_text().strip()
         pos = None
         if sctx in self.db:
-            self.add_to_menu(widget, "Emit", self.simpleclicked, 0)
-            pos = 1
+            self.add_to_menu(widget, "Emit password for '"+sctx+"'", self.simpleclicked, 0)
+            self.add_to_menu(widget, "Delete password for '"+sctx+"'", self.deleteclicked, 1)
+            pos = 2
         elif sctx is None or sctx == '':
             pass
         else:
-            self.add_to_menu(widget, "Create", self.create, 0)
+            self.add_to_menu(widget, "Create and emit password for '"+sctx+"'", self.create, 0)
             pos = 1
         if pos is not None:
             sep = Gtk.SeparatorMenuItem()
@@ -255,6 +288,14 @@ class Gui:
     def create(self, widget, data=None):
         sctx = self.entry.get_text().strip()
         self.selected = self.db.add(sctx)
+        self.db.save()
+        Gtk.main_quit()
+
+    def deleteclicked(self, widget):
+        sctx = self.entry.get_text().strip()
+        self.selected = None
+        # FIXME: should we prompt here?
+        self.db.remove(sctx)
         self.db.save()
         Gtk.main_quit()
 
