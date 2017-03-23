@@ -317,6 +317,9 @@ def gui(args, method=os.getenv('ASSWORD_XPASTE', 'xdo')):
     is found, the user has the opportunity to generate and store a new
     password, which is then delivered via ASSWORD_XPASTE.
 
+    Note: contexts that have leading or trailing whitespace are not
+    accessible through the GUI.
+
     """
     parser = argparse.ArgumentParser(prog=PROG+' gui',
                                      description=gui.__doc__)

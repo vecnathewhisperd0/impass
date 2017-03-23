@@ -140,6 +140,8 @@ class Gui:
         self.window = None
         self.entry = None
         self.label = None
+        if query is not None:
+            query = query.strip()
 
         if query:
             # If we have an intial query, directly do a search without
@@ -171,7 +173,7 @@ class Gui:
         completion.set_text_column(0)
         completion.set_match_func(_match_func, 0) # 0 is column number
         context_len = 50
-        for context in sorted(self.db, key=str.lower):
+        for context in sorted(filter(lambda x: x == x.strip(), self.db), key=str.lower):
             if len(context) > context_len:
                 context_len = len(context)
             liststore.append([context])
@@ -191,7 +193,7 @@ class Gui:
         self.builder.get_object('description').set_label(state)
         
     def update_simple_context_entry(self, widget):
-        sctx = self.entry.get_text()
+        sctx = self.entry.get_text().strip()
 
         if sctx in self.db:
             self.simplebtn.set_label("Emit")
@@ -204,7 +206,7 @@ class Gui:
             self.simplebtn.set_sensitive(True)
 
     def simpleclicked(self, widget):
-        sctx = self.entry.get_text()
+        sctx = self.entry.get_text().strip()
         if sctx in self.db:
             self.retrieve(None)
         elif sctx is None or sctx == '':
@@ -217,7 +219,7 @@ class Gui:
             Gtk.main_quit()
 
     def retrieve(self, widget, data=None):
-        sctx = self.entry.get_text()
+        sctx = self.entry.get_text().strip()
         if sctx in self.db:
             self.selected = self.db[sctx]
             if self.selected is None:
@@ -228,7 +230,7 @@ class Gui:
             self.label.set_text("no match")
 
     def create(self, widget, data=None):
-        sctx = self.entry.get_text()
+        sctx = self.entry.get_text().strip()
         self.selected = self.db.add(sctx)
         self.db.save()
         Gtk.main_quit()
