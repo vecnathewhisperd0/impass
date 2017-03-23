@@ -32,6 +32,19 @@ _gui_layout = '''<?xml version="1.0" encoding="UTF-8"?>
       </object>
     </child>
   </object>
+  <object class="GtkMenu" id="createmenu">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="halign">end</property>
+    <child>
+      <object class="GtkImageMenuItem" id="custommenuitem">
+        <property name="label" translatable="yes">Create custom…</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+  </object>
   <object class="GtkWindow" id="assword-gui">
     <property name="can_focus">False</property>
     <property name="border_width">4</property>
@@ -189,6 +202,7 @@ class Gui:
         self.simplebtn = self.builder.get_object('simplebtn')
         self.simplemenubtn = self.builder.get_object('simplemenubtn')
         self.emitmenu = self.builder.get_object('emitmenu')
+        self.createmenu = self.builder.get_object('createmenu')
         self.warning = self.builder.get_object('warning')
 
         if self.db.sigvalid is False:
@@ -212,6 +226,7 @@ class Gui:
         self.entry.connect("populate-popup", self.simple_ctx_popup)
         self.simplebtn.connect("clicked", self.simpleclicked)
         self.builder.get_object('deletemenuitem').connect("activate", self.deleteclicked)
+        self.builder.get_object('custommenuitem').connect("activate", self.customclicked)
 
         if query:
             self.entry.set_text(query)
@@ -227,16 +242,13 @@ class Gui:
 
         if sctx in self.db:
             self.simplebtn.set_label("Emit")
-            self.simplebtn.set_sensitive(True)
             self.simplemenubtn.set_popup(self.emitmenu)
         elif sctx is None or sctx == '':
-            self.simplebtn.set_label("Emit")
-            self.simplebtn.set_sensitive(False)
+            self.simplebtn.set_label("Create…")
             self.simplemenubtn.set_popup(None)
         else:
             self.simplebtn.set_label("Create")
-            self.simplebtn.set_sensitive(True)
-            self.simplemenubtn.set_popup(None)
+            self.simplemenubtn.set_popup(self.createmenu)
 
     def add_to_menu(self, menu, name, onclicked, position):
         x = Gtk.MenuItem(label=name)
@@ -246,27 +258,27 @@ class Gui:
             
     def simple_ctx_popup(self, entry, widget, data=None):
         sctx = self.entry.get_text().strip()
-        pos = None
         if sctx in self.db:
             self.add_to_menu(widget, "Emit password for '"+sctx+"'", self.simpleclicked, 0)
             self.add_to_menu(widget, "Delete password for '"+sctx+"'", self.deleteclicked, 1)
             pos = 2
         elif sctx is None or sctx == '':
-            pass
+            self.add_to_menu(widget, "Create custom password…", self.customclicked, 0)
+            pos = 1
         else:
             self.add_to_menu(widget, "Create and emit password for '"+sctx+"'", self.create, 0)
-            pos = 1
-        if pos is not None:
-            sep = Gtk.SeparatorMenuItem()
-            sep.show()
-            widget.insert(sep, pos)
+            self.add_to_menu(widget, "Create custom password for '"+sctx+"'…", self.customclicked, 1)
+            pos = 2
+        sep = Gtk.SeparatorMenuItem()
+        sep.show()
+        widget.insert(sep, pos)
 
     def simpleclicked(self, widget):
         sctx = self.entry.get_text().strip()
         if sctx in self.db:
             self.retrieve(None)
         elif sctx is None or sctx == '':
-            pass
+            self.customclicked(None)
         else:
             self.create(None)
         
@@ -299,6 +311,11 @@ class Gui:
         self.db.save()
         Gtk.main_quit()
 
+    def customclicked(self, widget):
+        # FIXME: not implemented!
+        print("customclicked")
+        pass
+    
     def destroy(self, widget, data=None):
         Gtk.main_quit()
 
