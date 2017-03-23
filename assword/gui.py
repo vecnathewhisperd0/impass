@@ -181,6 +181,7 @@ class Gui:
         self.window.connect("key-press-event", self.keypress)
         self.entry.connect("activate", self.simpleclicked)
         self.entry.connect("changed", self.update_simple_context_entry)
+        self.entry.connect("populate-popup", self.simple_ctx_popup)
         self.simplebtn.connect("clicked", self.simpleclicked)
 
         if query:
@@ -204,6 +205,28 @@ class Gui:
         else:
             self.simplebtn.set_label("Create")
             self.simplebtn.set_sensitive(True)
+
+    def add_to_menu(self, menu, name, onclicked, position):
+        x = Gtk.MenuItem(label=name)
+        x.connect("activate", onclicked)
+        x.show()
+        menu.insert(x, position)
+            
+    def simple_ctx_popup(self, entry, widget, data=None):
+        sctx = self.entry.get_text().strip()
+        pos = None
+        if sctx in self.db:
+            self.add_to_menu(widget, "Emit", self.simpleclicked, 0)
+            pos = 1
+        elif sctx is None or sctx == '':
+            pass
+        else:
+            self.add_to_menu(widget, "Create", self.create, 0)
+            pos = 1
+        if pos is not None:
+            sep = Gtk.SeparatorMenuItem()
+            sep.show()
+            widget.insert(sep, pos)
 
     def simpleclicked(self, widget):
         sctx = self.entry.get_text().strip()
