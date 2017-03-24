@@ -487,11 +487,19 @@ class Gui:
 
     def deleteclicked(self, widget):
         sctx = self.entry.get_text().strip()
-        self.selected = None
-        # FIXME: should we prompt here?
-        self.db.remove(sctx)
-        self.db.save()
-        Gtk.main_quit()
+        confirmation = Gtk.MessageDialog(parent=self.window,
+                                         modal=True,
+                                         destroy_with_parent=True,
+                                         buttons=Gtk.ButtonsType.OK_CANCEL,
+                                         message_type=Gtk.MessageType.QUESTION,
+                                         text="Are you sure you want to delete the password for '"+sctx+"'?")
+        answer = confirmation.run()
+        confirmation.destroy()
+        if answer == Gtk.ResponseType.OK:
+            self.selected = None
+            self.db.remove(sctx)
+            self.db.save()
+            Gtk.main_quit()
 
     def customclicked(self, widget):
         self.simplebox.hide()
