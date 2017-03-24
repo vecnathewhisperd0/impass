@@ -1,8 +1,10 @@
+import os
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import GObject
 from gi.repository import Gdk
+from assword.db import pwgen, DEFAULT_NEW_PASSWORD_OCTETS
 
 ############################################################
 
@@ -154,6 +156,159 @@ _gui_layout = '''<?xml version="1.0" encoding="UTF-8"?>
             <property name="position">2</property>
           </packing>
         </child>
+        <child>
+          <object class="GtkBox" id="ctxbox">
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkLabel" id="ctxlabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Context:</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="ctxbox2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkEntry" id="ctxentry">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="placeholder_text" translatable="yes">Enter context…</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="ctxwarning">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkLabel" id="ctxwarninglabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">This context already exists!</property>
+                        <attributes>
+                          <attribute name="style" value="italic"/>
+                          <attribute name="foreground" value="#cccc00000000"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="passbox">
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkLabel" id="passlabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Password:</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="passbox2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkEntry" id="passentry">
+                    <property name="visible">True</property>
+                    <property name="visibility">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="primary_icon_stock">gtk-refresh</property>
+                    <property name="secondary_icon_stock">gtk-find</property>
+                    <property name="primary_icon_tooltip_text" translatable="yes">generate a new password</property>
+                    <property name="secondary_icon_tooltip_text" translatable="yes">show password</property>
+                    <property name="placeholder_text" translatable="yes">You must enter a password!</property>
+                    <property name="input_purpose">password</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="passdescription">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">%d characters, %d lowercase, etc…</property>
+                     <attributes>
+                       <attribute name="style" value="italic"/>
+                     </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="createbtn">
+                <property name="label" translatable="yes">Create and emit</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
       </object>
     </child>
   </object>
@@ -170,7 +325,17 @@ class Gui:
 |                    description                   |
 +----------------- simplebox ----------------------+
 | [_simplectxentry____] <simplebtn> <simplemenubtn>|
-+--------------------------------------------------+
++------------------- ctxbox -----------------------+
+|          | +----- ctxbox2 -----------------------+
+| ctxlabel | | [_ctxentry________________________] |
+|          | +----- ctxwarning --------------------+
+|          | | ctxwarninglabel                     | (ctxwarning is only shown when ctxentry is changed to match an existing entry (createbtn is also disabled in this case))
+|          | +-------------------------------------+
++------------------- passbox ----------------------+
+|           +------ passbox2 --------+             |
+| passlabel | [_passentry__________] | <createbtn> | createbtn saves, emits, and closes
+|           | passdescription        |             |  
++-----------+------------------------+-------------+
 '''
         self.db = db
         self.query = None
@@ -204,6 +369,16 @@ class Gui:
         self.emitmenu = self.builder.get_object('emitmenu')
         self.createmenu = self.builder.get_object('createmenu')
         self.warning = self.builder.get_object('warning')
+        self.ctxentry = self.builder.get_object('ctxentry')
+        self.ctxwarning = self.builder.get_object('ctxwarning')
+        self.ctxwarninglabel = self.builder.get_object('ctxwarninglabel')
+        self.createbtn = self.builder.get_object('createbtn')
+        self.passentry = self.builder.get_object('passentry')
+        self.passdescription = self.builder.get_object('passdescription')
+
+        self.simplebox = self.builder.get_object('simplebox')
+        self.ctxbox = self.builder.get_object('ctxbox')
+        self.passbox = self.builder.get_object('passbox')
 
         if self.db.sigvalid is False:
             self.warning.show()
@@ -227,6 +402,13 @@ class Gui:
         self.simplebtn.connect("clicked", self.simpleclicked)
         self.builder.get_object('deletemenuitem').connect("activate", self.deleteclicked)
         self.builder.get_object('custommenuitem').connect("activate", self.customclicked)
+        self.ctxentry.connect("changed", self.update_ctxentry)
+        self.ctxentry.connect("activate", self.customcreateclicked)
+        self.passentry.connect("changed", self.update_passentry)
+        self.passentry.connect("activate", self.customcreateclicked)
+        self.passentry.connect("icon-press", self.passentry_icon_clicked)
+        self.passentry.connect("populate-popup", self.passentry_popup)
+        self.createbtn.connect("clicked", self.customcreateclicked)
 
         if query:
             self.entry.set_text(query)
@@ -255,7 +437,7 @@ class Gui:
         x.connect("activate", onclicked)
         x.show()
         menu.insert(x, position)
-            
+
     def simple_ctx_popup(self, entry, widget, data=None):
         sctx = self.entry.get_text().strip()
         if sctx in self.db:
@@ -312,10 +494,81 @@ class Gui:
         Gtk.main_quit()
 
     def customclicked(self, widget):
-        # FIXME: not implemented!
-        print("customclicked")
-        pass
-    
+        self.simplebox.hide()
+        self.ctxbox.show()
+        self.passbox.show()
+        self.ctxentry.set_text(self.entry.get_text())
+        selection = self.entry.get_selection_bounds()
+        if selection:
+            self.ctxentry.select_region(selection[0], selection[1])
+        else:
+            self.ctxentry.set_position(self.entry.get_position())
+        self.ctxentry.grab_focus_without_selecting()
+        self.set_state('Create new password (with custom settings):')
+        self.refreshpass()
+        self.update_ctxentry()
+
+    def update_ctxentry(self, widget=None, data=None):
+        sctx = self.ctxentry.get_text().strip()
+        if sctx in self.db:
+            self.ctxwarning.show()
+            self.ctxwarninglabel.set_text("The context '%s' already exists!"%(sctx))
+            self.createbtn.set_sensitive(False)
+        elif sctx is None or sctx == '':
+            self.ctxwarning.hide()
+            self.createbtn.set_sensitive(False)
+        else:
+            self.ctxwarning.hide()
+            self.createbtn.set_sensitive(self.passentry.get_text() != '')
+
+    def update_passentry(self, widget=None, data=None):
+        newpass = self.passentry.get_text()
+        sctx = self.ctxentry.get_text().strip()
+        l = len(newpass)
+        # FIXME: should check (and warn) for non-ascii characters
+        lcount = len(''.join(filter(lambda x: x.islower(), newpass)))
+        ucount = len(''.join(filter(lambda x: x.isupper(), newpass)))
+        ncount = len(''.join(filter(lambda x: x.isnumeric(), newpass)))
+        ocount = l - (lcount + ucount + ncount)
+        desc = "%d characters (%d lowercase, %d uppercase, %d number, %d other)"%(l, lcount, ucount, ncount, ocount)
+        self.createbtn.set_sensitive(newpass != '' and sctx != '' and sctx not in self.db)
+        self.passdescription.set_text(desc)
+
+    def passentry_icon_clicked(self, widget, pos, event=None, data=None):
+        if (pos == Gtk.EntryIconPosition.PRIMARY):
+            self.refreshpass()
+        elif (pos == Gtk.EntryIconPosition.SECONDARY):
+            newvis = not self.passentry.get_visibility()
+            self.passentry.set_visibility(newvis)
+            self.passentry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, "hide password" if newvis else "show password")
+
+    def passentry_popup(self, entry, widget, data=None):
+        self.add_to_menu(widget, "Generate a new password", self.refreshpass, 0)
+        self.add_to_menu(widget, "Hide password" if self.passentry.get_visibility() else "Show password", lambda x: self.passentry_icon_clicked(widget, Gtk.EntryIconPosition.SECONDARY), 1)
+        sep = Gtk.SeparatorMenuItem()
+        sep.show()
+        widget.insert(sep, 2)
+
+    def refreshpass(self, widget=None, event=None):
+        pwsize = os.environ.get('ASSWORD_PASSWORD', DEFAULT_NEW_PASSWORD_OCTETS)
+        try:
+            pwsize = int(pwsize)
+        except ValueError:
+            pwsize = DEFAULT_NEW_PASSWORD_OCTETS
+        newpw = pwgen(pwsize)
+        self.passentry.set_text(newpw)
+        # FIXME: should refocus self.passentry?
+
+    def customcreateclicked(self, widget=None, event=None):
+        newctx = self.ctxentry.get_text().strip()
+        newpass = self.passentry.get_text()
+        if newpass == '' or newctx == '' or newctx in self.db:
+            # this button is not supposed to work under these conditions
+            return
+        self.selected = self.db.add(newctx, password=newpass)
+        self.db.save()
+        Gtk.main_quit()
+
     def destroy(self, widget, data=None):
         Gtk.main_quit()
 
