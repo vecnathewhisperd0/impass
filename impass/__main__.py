@@ -20,8 +20,6 @@ PROG = 'impass'
 
 IMPASS_DIR = os.path.join(os.path.expanduser('~'),'.impass')
 
-DBPATH = os.getenv('IMPASS_DB', os.path.join(IMPASS_DIR, 'db'))
-
 ############################################################
 
 def xclip(text):
@@ -44,6 +42,7 @@ def error(code, msg=''):
     sys.exit(code)
 
 def open_db(keyid=None, create=False):
+    DBPATH = os.getenv('IMPASS_DB', os.path.join(IMPASS_DIR, 'db'))
     if not create and not os.path.exists(DBPATH):
         error(5, """Impass database does not exist.
 To add an entry to the database use 'impass add'.
@@ -567,7 +566,7 @@ def main():
         for var in vfound:
             print("  ASSWORD_{var} -> IMPASS_{var}".format(var=var), file=sys.stderr)
     assword_dir = os.path.join(os.path.expanduser('~'),'.assword')
-    if os.path.exists(assword_dir) and os.path.isdir(assword_dir):
+    if os.path.exists(assword_dir) and os.path.isdir(assword_dir) and not os.getenv('IMPASS_DB'):
         try:
             os.rename(assword_dir, IMPASS_DIR)
             print("renamed ~/.assword -> ~/.impass", file=sys.stderr)
