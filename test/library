@@ -7,21 +7,21 @@ test_description='library interface'
 ################################################################
 
 test_begin_subtest "create db"
-python3 - <<EOF 2>&1 | sed "s|$ASSWORD_DB|ASSWORD_DB|" >OUTPUT
+python3 - <<EOF 2>&1 | sed "s|$IMPASS_DB|IMPASS_DB|" >OUTPUT
 import os
 from stat import *
-import assword
-db = assword.Database("$ASSWORD_DB")
+import impass
+db = impass.Database("$IMPASS_DB")
 print(db)
 print(db.version)
 db.add('foo@bar')
 print('foo@bar' in db)
-db.save('$ASSWORD_KEYID')
-mode = os.stat("$ASSWORD_DB")[ST_MODE]
+db.save('$IMPASS_KEYID')
+mode = os.stat("$IMPASS_DB")[ST_MODE]
 print(mode&(S_IRWXU + S_IRWXG + S_IRWXO) == (S_IRUSR | S_IWUSR) + 0 + 0)
 EOF
 cat <<EOF >EXPECTED
-<assword.Database "ASSWORD_DB">
+<impass.Database "IMPASS_DB">
 1
 True
 True
@@ -29,15 +29,15 @@ EOF
 test_expect_equal_file OUTPUT EXPECTED
 
 test_begin_subtest "decrypt db"
-python3 - <<EOF 2>&1 | sed "s|$ASSWORD_DB|ASSWORD_DB|" >OUTPUT
-import assword
-db = assword.Database("$ASSWORD_DB")
+python3 - <<EOF 2>&1 | sed "s|$IMPASS_DB|IMPASS_DB|" >OUTPUT
+import impass
+db = impass.Database("$IMPASS_DB")
 print(db)
 print(db.version)
 print('foo@bar' in db)
 EOF
 cat <<EOF >EXPECTED
-<assword.Database "ASSWORD_DB">
+<impass.Database "IMPASS_DB">
 1
 True
 EOF
@@ -45,20 +45,20 @@ test_expect_equal_file OUTPUT EXPECTED
 
 # change permission to make sure permissions are preserved after
 # re-writes
-chmod 610 "$ASSWORD_DB"
+chmod 610 "$IMPASS_DB"
 
 test_begin_subtest "add second entry"
-python3 - <<EOF 2>&1 | sed "s|$ASSWORD_DB|ASSWORD_DB|" >OUTPUT
+python3 - <<EOF 2>&1 | sed "s|$IMPASS_DB|IMPASS_DB|" >OUTPUT
 import os
 from stat import *
-import assword
-db = assword.Database("$ASSWORD_DB", '$ASSWORD_KEYID')
+import impass
+db = impass.Database("$IMPASS_DB", '$IMPASS_KEYID')
 db.add('aaaa')
 print('aaaa' in db)
 for e in sorted(db):
   print(e)
 db.save()
-mode = os.stat("$ASSWORD_DB")[ST_MODE]
+mode = os.stat("$IMPASS_DB")[ST_MODE]
 print(mode&(S_IRWXU + S_IRWXG + S_IRWXO) == int('610',8))
 EOF
 cat <<EOF >EXPECTED
@@ -70,9 +70,9 @@ EOF
 test_expect_equal_file OUTPUT EXPECTED
 
 test_begin_subtest "replace entry"
-python3 - <<EOF 2>&1 | sed "s|$ASSWORD_DB|ASSWORD_DB|" >OUTPUT
-import assword
-db = assword.Database("$ASSWORD_DB", '$ASSWORD_KEYID')
+python3 - <<EOF 2>&1 | sed "s|$IMPASS_DB|IMPASS_DB|" >OUTPUT
+import impass
+db = impass.Database("$IMPASS_DB", '$IMPASS_KEYID')
 p1 = db['aaaa']['password']
 db.replace("aaaa")
 print('aaaa' in db)
@@ -87,9 +87,9 @@ EOF
 test_expect_equal_file OUTPUT EXPECTED
 
 test_begin_subtest "update entry"
-python3 - <<EOF 2>&1 | sed "s|$ASSWORD_DB|ASSWORD_DB|" >OUTPUT
-import assword
-db = assword.Database("$ASSWORD_DB", '$ASSWORD_KEYID')
+python3 - <<EOF 2>&1 | sed "s|$IMPASS_DB|IMPASS_DB|" >OUTPUT
+import impass
+db = impass.Database("$IMPASS_DB", '$IMPASS_KEYID')
 p1 = db['aaaa']['password']
 db.update('aaaa', 'bbbb')
 print('aaaa' in db)
@@ -106,17 +106,17 @@ EOF
 test_expect_equal_file OUTPUT EXPECTED
 
 test_begin_subtest "remove entry"
-python3 - <<EOF 2>&1 | sed "s|$ASSWORD_DB|ASSWORD_DB|" >OUTPUT
-import assword
-db = assword.Database("$ASSWORD_DB", '$ASSWORD_KEYID')
+python3 - <<EOF 2>&1 | sed "s|$IMPASS_DB|IMPASS_DB|" >OUTPUT
+import impass
+db = impass.Database("$IMPASS_DB", '$IMPASS_KEYID')
 print('foo@bar' in db)
 db.remove('foo@bar')
 print('foo@bar' in db)
 db.save()
 EOF
-python3 - <<EOF 2>&1 | sed "s|$ASSWORD_DB|ASSWORD_DB|" >>OUTPUT
-import assword
-db = assword.Database("$ASSWORD_DB", '$ASSWORD_KEYID')
+python3 - <<EOF 2>&1 | sed "s|$IMPASS_DB|IMPASS_DB|" >>OUTPUT
+import impass
+db = impass.Database("$IMPASS_DB", '$IMPASS_KEYID')
 for e in db:
   print(e)
 EOF
@@ -128,9 +128,9 @@ EOF
 test_expect_equal_file OUTPUT EXPECTED
 
 test_begin_subtest "add accented context"
-python3 - <<EOF 2>&1 | sed "s|$ASSWORD_DB|ASSWORD_DB|" >OUTPUT
-import assword
-db = assword.Database("$ASSWORD_DB", '$ASSWORD_KEYID')
+python3 - <<EOF 2>&1 | sed "s|$IMPASS_DB|IMPASS_DB|" >OUTPUT
+import impass
+db = impass.Database("$IMPASS_DB", '$IMPASS_KEYID')
 db.add('això')
 print('això' in db)
 for e in sorted(db):

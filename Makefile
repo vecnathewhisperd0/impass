@@ -4,24 +4,24 @@
 VERSION:=$(shell git describe --tags | sed -e s/_/~/ -e s/-/+/ -e s/-/~/ -e 's|.*/||')
 
 .PHONY: all
-all: assword.1
+all: impass.1
 
 .PHONY: test
 test:
-	./test/assword-test $(TEST_OPTS) && \
+	./test/impass-test $(TEST_OPTS)
 	rm -f test/gnupg/S.gpg-agent
 
-assword.1: assword
-	PYTHONPATH=. python3 -m assword help \
-	| txt2man -t assword -r 'assword $(VERSION)' -s 1 \
-	> assword.1
+impass.1: impass
+	PYTHONPATH=. python3 -m impass help \
+	| txt2man -t impass -r 'impass $(VERSION)' -s 1 \
+	> impass.1
 
 version:
-	echo "__version__ = '$(VERSION)'" >assword/version.py
+	echo "__version__ = '$(VERSION)'" >impass/version.py
 
 .PHONY: clean
 clean:
-	rm -f assword.1
+	rm -f impass.1
 
 .PHONY: debian-snapshot
 debian-snapshot:

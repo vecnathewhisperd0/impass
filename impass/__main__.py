@@ -11,15 +11,16 @@ import textwrap
 import subprocess
 import collections
 
-import assword
+from .db import Database, DatabaseError, DEFAULT_NEW_PASSWORD_OCTETS
+from .version import __version__
 
-PROG = 'assword'
+PROG = 'impass'
 
 ############################################################
 
-ASSWORD_DIR = os.path.join(os.path.expanduser('~'),'.assword')
+IMPASS_DIR = os.path.join(os.path.expanduser('~'),'.impass')
 
-DBPATH = os.getenv('ASSWORD_DB', os.path.join(ASSWORD_DIR, 'db'))
+DBPATH = os.getenv('IMPASS_DB', os.path.join(IMPASS_DIR, 'db'))
 
 ############################################################
 
@@ -44,22 +45,22 @@ def error(code, msg=''):
 
 def open_db(keyid=None, create=False):
     if not create and not os.path.exists(DBPATH):
-        error(5, """Assword database does not exist.
-To add an entry to the database use 'assword add'.
-See 'assword help' for more information.""")
+        error(5, """Impass database does not exist.
+To add an entry to the database use 'impass add'.
+See 'impass help' for more information.""")
     try:
-        db = assword.Database(DBPATH, keyid)
+        db = Database(DBPATH, keyid)
     except gpg.errors.GPGMEError as e:
         error(20, 'Decryption error: %s' % (e))
-    except assword.DatabaseError as e:
-        error(10, 'Assword database error: %s' % e.msg)
+    except DatabaseError as e:
+        error(10, 'Impass database error: %s' % e.msg)
     if db.sigvalid is False:
         print("WARNING: could not validate OpenPGP signature on db file.", file=sys.stderr)
     return db
 
 def get_keyid():
-    keyid = os.getenv('ASSWORD_KEYID')
-    keyfile = os.getenv('ASSWORD_KEYFILE', os.path.join(ASSWORD_DIR, 'keyid'))
+    keyid = os.getenv('IMPASS_KEYID')
+    keyfile = os.getenv('IMPASS_KEYFILE', os.path.join(IMPASS_DIR, 'keyid'))
 
     if not keyid and os.path.exists(keyfile):
         with open(keyfile, 'r') as f:
@@ -68,8 +69,8 @@ def get_keyid():
     save = False
     if not keyid:
         print("OpenPGP key ID of encryption target not specified.", file=sys.stderr)
-        print("Please provide key ID in ASSWORD_KEYID environment variable,", file=sys.stderr)
-        print("or specify key ID now to save in ~/.assword/keyid file.", file=sys.stderr)
+        print("Please provide key ID in IMPASS_KEYID environment variable,", file=sys.stderr)
+        print("or specify key ID now to save in ~/.impass/keyid file.", file=sys.stderr)
         keyid = input('OpenPGP key ID: ')
         if keyid == '':
             keyid = None
@@ -142,15 +143,15 @@ def retrieve_context(arg, prompt='context: ', default=None, stdin=True, db=None)
 
 class PasswordAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-        if not os.getenv('ASSWORD_PASSWORD'):
+        if not os.getenv('IMPASS_PASSWORD'):
             password = None
-        elif os.getenv('ASSWORD_PASSWORD') in ['prompt',':']:
+        elif os.getenv('IMPASS_PASSWORD') in ['prompt',':']:
             password = ':'
         else:
             try:
-                password = int(os.getenv('ASSWORD_PASSWORD'))
+                password = int(os.getenv('IMPASS_PASSWORD'))
             except ValueError:
-                error(1, "ASSWORD_PASSWORD environment variable is neither int nor 'prompt'.")
+                error(1, "IMPASS_PASSWORD environment variable is neither int nor 'prompt'.")
         # print('%s %s %s' % (parser, namespace, values))
         if values == ':':
             password = ':'
@@ -209,8 +210,8 @@ def add(args):
     try:
         db.add(context, password)
         db.save()
-    except assword.DatabaseError as e:
-        error(10, 'Assword database error: %s' % e.msg)
+    except DatabaseError as e:
+        error(10, 'Impass database error: %s' % e.msg)
     print("New entry writen.", file=sys.stderr)
 
 def replace(args):
@@ -241,8 +242,8 @@ def replace(args):
     try:
         db.replace(context, password)
         db.save()
-    except assword.DatabaseError as e:
-        error(10, 'Assword database error: %s' % e.msg)
+    except DatabaseError as e:
+        error(10, 'Impass database error: %s' % e.msg)
     print("Password replaced.", file=sys.stderr)
 
 def update(args):
@@ -275,8 +276,8 @@ def update(args):
     try:
         db.update(old_context, new_context)
         db.save()
-    except assword.DatabaseError as e:
-        error(10, 'Assword database error: %s' % e.msg)
+    except DatabaseError as e:
+        error(10, 'Impass database error: %s' % e.msg)
     print("Entry updated.", file=sys.stderr)
 
 def dump(args):
@@ -284,7 +285,7 @@ def dump(args):
 
     If a string is provide only entries whose context contains the
     string will be dumped. Otherwise all entries are returned.
-    Passwords will not be displayed unless ASSWORD_DUMP_PASSWORDS is
+    Passwords will not be displayed unless IMPASS_DUMP_PASSWORDS is
     set.
 
     """
@@ -301,11 +302,11 @@ def dump(args):
     for context in results:
         output[context] = {}
         output[context]['date'] = results[context]['date']
-        if os.getenv('ASSWORD_DUMP_PASSWORDS'):
+        if os.getenv('IMPASS_DUMP_PASSWORDS'):
             output[context]['password'] = results[context]['password']
     print(json.dumps(output, sort_keys=True, indent=2))
 
-def gui(args, method=os.getenv('ASSWORD_XPASTE', 'xdo')):
+def gui(args, method=os.getenv('IMPASS_XPASTE', 'xdo')):
     """Launch minimal X GUI.
 
     Good for X11 window manager integration. Upon invocation the user
@@ -314,9 +315,9 @@ def gui(args, method=os.getenv('ASSWORD_XPASTE', 'xdo')):
     provided, it will be added as the initial search string. All
     matching results for the query will be presented to the user.
     When a result is selected, the password will be retrieved
-    according to the method specified by ASSWORD_XPASTE. If no match
+    according to the method specified by IMPASS_XPASTE. If no match
     is found, the user has the opportunity to generate and store a new
-    password, which is then delivered via ASSWORD_XPASTE.
+    password, which is then delivered via IMPASS_XPASTE.
 
     Note: contexts that have leading or trailing whitespace are not
     accessible through the GUI.
@@ -328,7 +329,7 @@ def gui(args, method=os.getenv('ASSWORD_XPASTE', 'xdo')):
                         help="substring match for contexts")
     if args is None: return parser
     args = parser.parse_args(args)
-    from assword.gui import Gui
+    from .gui import Gui
     if method == 'xdo':
         try:
             import xdo
@@ -387,8 +388,8 @@ def remove(args):
     try:
         db.remove(context)
         db.save()
-    except assword.DatabaseError as e:
-        error(10, 'Assword database error: %s' % e.msg)
+    except DatabaseError as e:
+        error(10, 'Impass database error: %s' % e.msg)
     print("Entry removed.", file=sys.stderr)
 
 def print_help(args):
@@ -412,12 +413,12 @@ def version(args):
     parser = argparse.ArgumentParser(prog=PROG+' version',
                                      description=version.__doc__)
     if args is None: return parser
-    print(assword.__version__)
+    print(__version__)
 
 ############################################################
 # main
 
-synopsis = """assword <command> [<args>...]"""
+synopsis = """{prog} <command> [<args>...]""".format(prog=PROG)
 
 # NOTE: double spaces are interpreted by text2man to be paragraph
 # breaks.  NO DOUBLE SPACES.  Also two spaces at the end of a line
@@ -425,7 +426,7 @@ synopsis = """assword <command> [<args>...]"""
 def print_manpage():
     print("""
 NAME
-  assword - Simple and secure password management and retrieval system
+  {prog} - Simple and secure password management and retrieval system
 
 SYNOPSIS
   {synopsis}
@@ -434,7 +435,7 @@ DESCRIPTION
 
   The password database is stored as a single json object, OpenPGP
   encrypted and signed, and written to local disk (see
-  ASSWORD_DB). The file is created upon addition of the first
+  IMPASS_DB). The file is created upon addition of the first
   entry. Database entries are keyed by 'context'. During retrieval of
   passwords the database is decrypted and read into memory. Contexts
   are searched by sub-string match.
@@ -447,7 +448,7 @@ DESCRIPTION
 
   Passwords are auto-generated by default with {octets} bytes of
   entropy. The number of octets can be specified with the
-  ASSWORD_PASSWORD environment variable or via the 'pwspec' optional
+  IMPASS_PASSWORD environment variable or via the 'pwspec' optional
   argument to relevant commands. The length of the actually generated
   password will sometimes be longer than the specified bytes due to
   base64 encoding. If pwspec is ':' the user will be prompted for the
@@ -463,24 +464,24 @@ SIGNATURES
     message will be written to stderr.
 
 ENVIRONMENT
-    ASSWORD_DB  
-        Path to assword database file. Default: ~/.assword/db
+    IMPASS_DB  
+        Path to impass database file. Default: ~/.impass/db
 
-    ASSWORD_KEYFILE  
+    IMPASS_KEYFILE  
         File containing OpenPGP key ID of database encryption
-        recipient. Default: ~/.assword/keyid
+        recipient. Default: ~/.impass/keyid
 
-    ASSWORD_KEYID  
+    IMPASS_KEYID  
         OpenPGP key ID of database encryption recipient. This
-        overrides ASSWORD_KEYFILE if set.
+        overrides IMPASS_KEYFILE if set.
 
-    ASSWORD_PASSWORD  
+    IMPASS_PASSWORD  
         See Passwords above.
 
-    ASSWORD_DUMP_PASSWORDS  
+    IMPASS_DUMP_PASSWORDS  
         Include passwords in dump when set.
 
-    ASSWORD_XPASTE  
+    IMPASS_XPASTE  
         Method for password retrieval. Options are: 'xdo', which
         attempts to type the password into the window that had focus
         on launch, or 'xclip' which inserts the password in the X
@@ -489,9 +490,10 @@ ENVIRONMENT
 AUTHOR
     Jameson Graef Rollins <jrollins@finestructure.net>
     Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-""".format(synopsis=synopsis,
+""".format(prog=PROG,
+           synopsis=synopsis,
            cmds=format_commands(man=True),
-           octets=assword.db.DEFAULT_NEW_PASSWORD_OCTETS).strip())
+           octets=DEFAULT_NEW_PASSWORD_OCTETS).strip())
 
 def format_commands(man=False):
     prefix = ' '*8
@@ -504,7 +506,7 @@ def format_commands(man=False):
         for name, func in CMDS.items():
             if man:
                 parser = func(None)
-                usage = parser.format_usage()[len('usage: assword '):].strip()
+                usage = parser.format_usage()[len('usage: impass '):].strip()
                 desc = wrapper.fill('\n'.join([l.strip() for l in parser.description.splitlines() if l]))
                 f.write("  {}  \n".format(usage))
                 f.write(desc+'\n')

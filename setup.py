@@ -15,25 +15,25 @@ with open(path.join(here, 'README'), encoding='utf-8') as f:
     long_description = f.read()
 
 version = {}
-with open("assword/version.py") as f:
+with open("impass/version.py") as f:
     exec(f.read(), version)
 
 setup(
-    name = 'assword',
+    name = 'impass',
     version = version['__version__'],
     description = 'Simple and secure password management system.',
     long_description = long_description,
     author = 'Jameson Rollins',
     author_email = 'jrollins@finestructure.net',
-    url = 'https://finestructure.net/assword',
+    url = 'https://finestructure.net/impass',
     license = 'GPLv3+',
-    packages = ['assword'],
+    packages = ['impass'],
     keywords = ['passwords password-management'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-        # maybe extend this?  "assword gui" won't work on anything but
+        # maybe extend this?  "impass gui" won't work on anything but
         # X11, but the rest of it might still be useful.
         'Environment :: X11 Applications',
         'Operating System :: POSIX',
@@ -51,7 +51,7 @@ setup(
     # should we have a 'gui_scripts' as well?
     entry_points={
         'console_scripts': [
-            'assword = assword.__main__:main',
+            'impass = impass.__main__:main',
         ],
     },
 )
