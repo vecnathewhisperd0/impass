@@ -552,6 +552,29 @@ def main():
         print(format_commands(), file=sys.stderr)
         error(1)
 
+    ### DEPRECATE: this is for the assword->impass transition
+    if os.path.basename(sys.argv[0]) == 'assword':
+        print("""WARNING: assword has been renamed "impass".  Please update your invocations.""", file=sys.stderr)
+    vfound = []
+    for var in ['DB', 'KEYFILE', 'KEYID', 'PASSWORD', 'DUMP_PASSWORDS', 'XPASTE']:
+        val = os.getenv('ASSWORD_'+var)
+        if val:
+            vfound.append(var)
+            if not os.getenv('IMPASS_'+var):
+                os.environ['IMPASS_'+var] = val
+    if vfound:
+        print("""WARNING: assword has been renamed "impass".  Please update your environment variables:""", file=sys.stderr)
+        for var in vfound:
+            print("  ASSWORD_{var} -> IMPASS_{var}".format(var=var), file=sys.stderr)
+    assword_dir = os.path.join(os.path.expanduser('~'),'.assword')
+    if os.path.exists(assword_dir) and os.path.isdir(assword_dir):
+        try:
+            os.rename(assword_dir, IMPASS_DIR)
+            print("renamed ~/.assword -> ~/.impass", file=sys.stderr)
+        except:
+            sys.exit("Could not rename old assword directory ~/.assword -> ~/.impass.\nPlease check ~/.impass path.")
+    ### DEPRECATE
+
     cmd = sys.argv[1]
     args = sys.argv[2:]
     func = get_func(cmd)
