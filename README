@@ -15,6 +15,8 @@ without displaying on the screen.  Multiple retrieval methods are
 available, including auto-typing them directly into an X11 window
 (default), or inserting them into the X11 clipboard.
 
+impass was previously known as "assword".
+
 
 Contact
 =======
@@ -71,7 +73,7 @@ Then:
     $ sudo apt-get install build-essential devscripts pkg-config python3-all-dev python3-setuptools debhelper dpkg-dev fakeroot
     $ make debian-snapshot
     $ sudo apt-get install python3-gpg python3-gi python3-pkg-resources python3-xdo xclip
-    $ sudo dpkg -i build/assword_0.*_amd64.deb
+    $ sudo dpkg -i build/impass_0.*_amd64.deb
 
 
 Using impass
