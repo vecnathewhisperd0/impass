@@ -1,3 +1,24 @@
+ * ENHANCEMENT: advanced create gui.  allows editing context, password
+   and potentially expiration.  password edit should provide
+   statistics about password (number of characters/numbers/special
+   characters/etc.).  ctrl+e could be shortcut key.
+
+ * ENHANCEMENT: entry edit gui.  allows editing context, password and
+   potentially expiration.  password edit should provide statistics
+   about password (number of characters/numbers/special
+   characters/etc.).  ctrl+e could be shortcut key.
+
+ * ENHANCEMENT: add password expiration.  User enters expiration in
+   "natural language", which is resolved to future date expiration.
+   Expiration date and specified delta are stored, so delta can be
+   used to suggest expirations in the future.
+
+ * ENHANCEMENT: store context history in separate encrypted file.  gui
+   should allow navigating history (via arrows and other command keys)
+   when the context field is empty.  Break out Database class into
+   generic encrypted json store class the both Database and History
+   classes can inherit from.
+
  * BUG: assword crashes when it gets EOF on stdin when prompting or
    when ASSWORD_PASSWORD=prompt.
 
@@ -9,46 +30,46 @@
  * ENHANCEMENT: xdo has two input methods -- one based on XSendEvent,
    and one based on injecting keystrokes into the X session as a whole
    (the difference is whether a window ID parameter is passed to
-   "type").  We use the latter right now in xsearch despite its
+   "type").  We use the latter right now in gui despite its
    possibility of leakage because some X11 applications ignore
    XSendEvent input.  Provide some hinting mechanism derived from the
    window in question to conditionally enable XSendEvent instead.
 
- * ENHANCEMENT: be able to edit a context once it is created.  for
-   example, i often create a password when setting up an account on a
-   remote web site.  Some account signup workflows don't tell me if
-   the account name i wanted was taken until after i've signed up.  By
-   then, i've created the password, and i want to adjust it manually.
-
  * ENHANCEMENT: can we use python clipboard bindings instead of
    "xclip -i"?
 
- * ENHANCEMENT: on xsearch if selected window is known browser, and
-   it's possible to extract url, preseed context search with hostname
-   of url.
+ * ENHANCEMENT: preseed context in gui.  use the target window title
+   and/or pid to pre-seed the search box in "assword gui" (this should
+   be pre-selected text so it is easy to start typing something else)
+   if selected window is known browser, and it's possible to extract
+   url, preseed context search with hostname of url.
 
- * ENHANCEMENT: xsearch create action should modify the database, move
+ * ENHANCEMENT: gui create action should modify the database, move
    the user's focus back into the textentry (highlighting the whole
    entry text), disable the "Create" button, and *not* explicitly
    select and terminate.  The user can then select in the usual way
    (pressing enter) or can continue without selecting.
 
- * ENHANCEMENT: review the label texts and make sure they're saying
+ * ENHANCEMENT: review gui label texts and make sure they're saying
    reasonable things in different parts of the workflow.
 
- * ENHANCEMENT: ctrl+del from xsearch when a matching context is
+ * ENHANCEMENT: ctrl+del from gui when a matching context is
    present should allow deletion of the indicated password.  This
    should probably prompt for confirmation.
 
- * ENHANCEMENT: ctrl+e from xsearch when a matching context is present
-   should display another entry with the context's password in it; the
-   user can then edit the password to adjust for stupid web site
-   rules.  the rest of the UI should be disabled
-   (set_sensitive(False)) while this password editor is active.
+ * ENHANCEMENT: support multiple DB files. change current DB path to
+   directory.  app opens all available db files and presents a unified
+   them in a single entry dict that can be searched/edited/etc.
+   entries should store db source and present to user adjacent to
+   context.  Entry edits should go back to the appropriate db file.
+   db files should store name and version in internal db metadata, and
+   file name should include version number.
 
- * ENHANCEMENT: consider how to deal with multiple DB backends, and
-   post-save and pre-open hooks (e.g. to push to and fetch from a
-   remote repository of these changes)
+ * ENHANCEMENT: multi db syncronization. maybe start with a
+   centralized, SVN-like-without-history system.  pull remotes.  db
+   edits increment db version number.  pushes succeed transparently if
+   remote has same version as last sync.  if remote version has been
+   incremented initiate local-side merge.
 
  * ENHANCEMENT: associate default _XPASTE mechanisms with some
    contexts: if you know that certain passwords work with tools that
@@ -64,9 +85,5 @@
    but rxvt works with another one) -- we can guess by looking at the
    process that controls the window and/or the window title or other
    things (we might need to expand python-xdo to get these guesses)
-
- * ENHANCEMENT: use the target window title and/or pid to pre-seed the
-   search box in "assword gui" (this should be pre-selected text so it
-   is easy to start typing something else)
 
  * ENHANCEMENT: test for various PASSWORD values

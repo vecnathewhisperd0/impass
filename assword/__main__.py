@@ -294,7 +294,8 @@ def dump(args):
                         help="substring match for contexts")
     if args is None: return parser
     args = parser.parse_args(args)
-    db = open_db()
+    keyid = get_keyid()
+    db = open_db(keyid)
     results = db.search(args.string)
     output = {}
     for context in results:
@@ -316,6 +317,9 @@ def gui(args, method=os.getenv('ASSWORD_XPASTE', 'xdo')):
     according to the method specified by ASSWORD_XPASTE. If no match
     is found, the user has the opportunity to generate and store a new
     password, which is then delivered via ASSWORD_XPASTE.
+
+    Note: contexts that have leading or trailing whitespace are not
+    accessible through the GUI.
 
     """
     parser = argparse.ArgumentParser(prog=PROG+' gui',
@@ -487,7 +491,7 @@ AUTHOR
     Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 """.format(synopsis=synopsis,
            cmds=format_commands(man=True),
-           octets=assword.DEFAULT_NEW_PASSWORD_OCTETS).strip())
+           octets=assword.db.DEFAULT_NEW_PASSWORD_OCTETS).strip())
 
 def format_commands(man=False):
     prefix = ' '*8

@@ -95,17 +95,19 @@ class Database:
         return iter(self._entries)
 
     def _decryptDB(self, path):
-        data = io.BytesIO()
-        with io.BytesIO() as encdata:
-            with open(path, 'rb') as f:
-                encdata.write(f.read())
-                encdata.seek(0)
-                data, _, vfy = self._gpg.decrypt(encdata)
-        # check signature
-        if not vfy.signatures[0].validity >= gpg.constants.VALIDITY_FULL:
-            self._sigvalid = False
-        else:
-            self._sigvalid = True
+        data = None
+        self._sigvalid = False
+        with open(path, 'rb') as f:
+            try:
+                k = self._gpg.get_key(self._keyid)
+                data, _, vfy = self._gpg.decrypt(f, verify=[k])
+                for s in vfy.signatures:
+                    if s.validity >= gpg.constants.VALIDITY_FULL:
+                        self._sigvalid = True
+            except:
+                # retry decryption without verification:
+                with open(path, 'rb') as try2:
+                    data, _, _ = self._gpg.decrypt(try2, verify=False)
         return data
 
     def _encryptDB(self, data, keyid):
@@ -131,7 +133,7 @@ class Database:
                 bytes = password
             password = pwgen(bytes)
         e = {'password': password,
-             'date': datetime.datetime.now().isoformat()}
+             'date': datetime.datetime.utcnow().isoformat() + 'Z'}
         self._entries[context] = e
         return e
 
