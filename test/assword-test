@@ -35,6 +35,9 @@ fi
 
 # Prep
 rm -rf test-results
+mkdir -m 0700 -p ./gnupg
+GNUPGHOME=./gnupg gpg --import < openpgp-data/secring.gpg
+GNUPGHOME=./gnupg gpg --import-ownertrust < openpgp-data/ownertrust.txt
 
 trap 'e=$?; kill $!; exit $e' HUP INT TERM
 # Run the tests
@@ -50,5 +53,6 @@ ev=$?
 
 # Clean up
 rm -rf test-results
+rm -rf ./gnupg
 
 exit $ev
