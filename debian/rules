@@ -1,6 +1,7 @@
 #!/usr/bin/make -f
 
 export PYBUILD_NAME = impass
+export PYBUILD_DESTDIR = $(shell pwd)/debian/impass
 
 %:
 	dh $@ --with python3 --buildsystem pybuild
