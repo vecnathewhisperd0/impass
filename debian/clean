@@ -1,7 +1,5 @@
-assword.1
-assword.egg-info/
-test/gnupg/random_seed
-test/gnupg/private-keys-v1.d/
-test/gnupg/.gpg-v21-migrated
+impass.1
+impass.egg-info/
+test/gnupg/
 test/tmp.cli/
 test/tmp.library/

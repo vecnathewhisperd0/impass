@@ -1,0 +1,21 @@
+assword (0.12-1) unstable; urgency=medium
+
+  The assword password manager has been renamed to "impass".  The
+  assword package is a dummy transitional package that provides
+  symlinks to the deprecated assword command.
+
+  Users should invoke /usr/bin/impass instead of /usr/bin/assword, and
+  change any old assword-related environment variables to impass
+  environment variables.  In particular:
+
+   - ASSWORD_DB              → IMPASS_DB
+   - ASSWORD_KEYFILE         → IMPASS_KEYFILE
+   - ASSWORD_KEYID           → IMPASS_KEYID
+   - ASSWORD_PASSWORD        → IMPASS_PASSWORD
+   - ASSWORD_DUMP_PASSWORDS  → IMPASS_DUMP_PASSWORDS
+   - ASSWORD_XPASTE          → IMPASS_XPASTE
+
+  After the release of debian 10 ("buster"), assword will be removed
+  from the debian archive.
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Fri, 23 Feb 2018 02:17:45 -0800

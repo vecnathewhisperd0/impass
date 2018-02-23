@@ -1,4 +1,4 @@
-Source: assword
+Source: impass
 Section: utils
 Priority: optional
 Maintainer: Jameson Graef Rollins <jrollins@finestructure.net>
@@ -18,9 +18,9 @@ Vcs-Git: https://salsa.debian.org/debian/impass.git
 Vcs-Browser: https://salsa.debian.org/debian/impass
 Rules-Requires-Root: no
 
-Package: assword
+Package: impass
 Provides:
- python3-assword,
+ python3-impass,
 Architecture: all
 Depends:
  python3-gpg,
@@ -32,7 +32,7 @@ Recommends:
  python3-xdo,
  xclip,
 Description: Simple and secure password management and retrieval system
- Assword is a secure password manager that relies on your OpenPGP key
+ Impass is a secure password manager that relies on your OpenPGP key
  for security and is designed to integrate in a minimal fashion into
  any X11 window manager.
  .
@@ -45,3 +45,17 @@ Description: Simple and secure password management and retrieval system
  are securely retrieved without displaying on the screen.  Multiple
  retrieval methods are available, including auto-typing them directly
  into an X11 window (default), or inserting them into the X11 clipboard.
+
+Package: assword
+Section: oldlibs
+Architecture: all
+Multi-Arch: foreign
+Depends:
+ impass (= ${binary:Version}),
+ ${misc:Depends},
+Description: Simple password manager (dummy transitional package)
+ Assword has been renamed to Impass.
+ .
+ This is a dummy transitional package; please use "impass" instead.
+ .
+ It is safe to remove this package.

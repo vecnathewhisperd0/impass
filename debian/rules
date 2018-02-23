@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-export PYBUILD_NAME = assword
+export PYBUILD_NAME = impass
 
 %:
 	dh $@ --with python3 --buildsystem pybuild
@@ -9,5 +9,5 @@ override_dh_auto_test:
 	make test
 
 override_dh_installman:
-	make assword.1
+	make impass.1
 	dh_installman
