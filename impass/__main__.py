@@ -574,7 +574,7 @@ def main():
        (not os.path.islink(assword_dir)) and \
        os.path.isdir(assword_dir) and \
        (not os.getenv('IMPASS_DB')) and \
-       cmd not in ['help', 'version']:
+       cmd not in ['help', 'version', '-h', '--help', '--version']:
         try:
             os.rename(assword_dir, IMPASS_DIR)
             linkok = False
