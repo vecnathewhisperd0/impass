@@ -42,13 +42,13 @@ test_expect_code 2 'failure to clean up causes the test to fail' '
 
 # Ensure that all tests are being run
 test_begin_subtest 'Ensure that all available tests will be run'
-eval $(sed -n -e '/^TESTS="$/,/^"$/p' $TEST_DIRECTORY/assword-test)
+eval $(sed -n -e '/^TESTS="$/,/^"$/p' $TEST_DIRECTORY/impass-test)
 tests_in_suite=$(for i in $TESTS $TESTS_NET; do echo $i; done | sort)
 available=$(find "$TEST_DIRECTORY" -maxdepth 1 -type f -perm /111  \
     ! -name '*~'                        \
     ! -name 'lib/*'                     \
     ! -name test-verbose		\
-    ! -name assword-test               \
+    ! -name impass-test                 \
     | sed 's,.*/,,' | sort)
 test_expect_equal "$tests_in_suite" "$available"
 
@@ -72,8 +72,8 @@ rm -r $TEST_DIRECTORY/tmp.test-verbose
 test_expect_equal "$output" "$expected"
 
 test_begin_subtest "Ensure that we're looking at the correct library"
-output=$(python3 -c 'import assword; print(assword.__file__)')
-expected="${SRC_DIRECTORY}/assword/__init__.py"
+output=$(python3 -c 'import impass; print(impass.__file__)')
+expected="${SRC_DIRECTORY}/impass/__init__.py"
 test_expect_equal "$output" "$expected"
 
 ################################################################

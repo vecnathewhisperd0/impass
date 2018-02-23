@@ -4,7 +4,8 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import GObject
 from gi.repository import Gdk
-from assword.db import pwgen, DEFAULT_NEW_PASSWORD_OCTETS
+
+from .db import pwgen, DEFAULT_NEW_PASSWORD_OCTETS
 
 ############################################################
 
@@ -47,10 +48,10 @@ _gui_layout = '''<?xml version="1.0" encoding="UTF-8"?>
       </object>
     </child>
   </object>
-  <object class="GtkWindow" id="assword-gui">
+  <object class="GtkWindow" id="impass-gui">
     <property name="can_focus">False</property>
     <property name="border_width">4</property>
-    <property name="title" translatable="yes">assword</property>
+    <property name="title" translatable="yes">impass</property>
     <property name="icon_name">dialog-password</property>
     <child>
       <object class="GtkBox">
@@ -99,7 +100,7 @@ _gui_layout = '''<?xml version="1.0" encoding="UTF-8"?>
           <object class="GtkLabel" id="description">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label">Global state of assword gui</property>
+            <property name="label">Global state of impass gui</property>
           </object>
           <packing>
             <property name="expand">True</property>
@@ -316,7 +317,7 @@ _gui_layout = '''<?xml version="1.0" encoding="UTF-8"?>
 '''
 
 class Gui:
-    """Assword X-based query UI."""
+    """Impass X-based query UI."""
     def __init__(self, db, query=None):
         '''
 +--------------------- warning --------------------+
@@ -362,7 +363,7 @@ class Gui:
                 return
 
         self.builder = Gtk.Builder.new_from_string(_gui_layout, len(_gui_layout))
-        self.window = self.builder.get_object('assword-gui')
+        self.window = self.builder.get_object('impass-gui')
         self.entry = self.builder.get_object('simplectxentry')
         self.simplebtn = self.builder.get_object('simplebtn')
         self.simplemenubtn = self.builder.get_object('simplemenubtn')
@@ -558,7 +559,7 @@ class Gui:
         widget.insert(sep, 2)
 
     def refreshpass(self, widget=None, event=None):
-        pwsize = os.environ.get('ASSWORD_PASSWORD', DEFAULT_NEW_PASSWORD_OCTETS)
+        pwsize = os.environ.get('IMPASS_PASSWORD', DEFAULT_NEW_PASSWORD_OCTETS)
         try:
             pwsize = int(pwsize)
         except ValueError:

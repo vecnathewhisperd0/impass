@@ -7,7 +7,7 @@
 # Adapted from a Makefile to a shell script by Carl Worth (2010)
 
 if [ ${BASH_VERSINFO[0]} -lt 4 ]; then
-    echo "Error: The assword test suite requires a bash version >= 4.0"
+    echo "Error: The impass test suite requires a bash version >= 4.0"
     echo "due to use of associative arrays within the test suite."
     echo "Please try again with a newer bash (or help us fix the"
     echo "test suite to be more portable). Thanks."
@@ -23,7 +23,7 @@ TESTS="
 "
 
 #  setup
-TESTS=${ASSWORD_TESTS:=$TESTS}
+TESTS=${IMPASS_TESTS:=$TESTS}
 
 # test for timeout utility
 if command -v timeout >/dev/null; then
@@ -48,6 +48,7 @@ done
 trap - HUP INT TERM
 
 # Report results
+echo
 ./lib/test-aggregate-results test-results/*
 ev=$?
 

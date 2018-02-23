@@ -27,12 +27,13 @@ class DatabaseError(Exception):
         return repr(self.msg)
 
 class Database:
-    """An Assword database."""
+    """An impass database."""
 
     def __init__(self, dbpath=None, keyid=None):
         """Database at dbpath will be decrypted and loaded into memory.
 
-        If dbpath not specified, empty database will be initialized.
+        If dbpath is not specified, an empty database will be
+        initialized.
 
         The sigvalid property is set False if any OpenPGP signatures
         on the db file are invalid.  sigvalid is None for new
@@ -43,7 +44,7 @@ class Database:
         self._keyid = keyid
 
         # default database information
-        self._type = 'assword'
+        self._type = 'impass'
         self._version = 1
         self._entries = {}
 
@@ -60,8 +61,9 @@ class Database:
                 raise DatabaseError(e)
 
             # unpack the json data
-            if 'type' not in jsondata or jsondata['type'] != self._type:
-                raise DatabaseError('Database is not a proper assword database.')
+            # FIXME: we accept "assword" type for backwords compatibility
+            if 'type' not in jsondata or jsondata['type'] not in [self._type, 'assword']:
+                raise DatabaseError('Database is not a proper impass database.')
             if 'version' not in jsondata or jsondata['version'] != self._version:
                 raise DatabaseError('Incompatible database.')
             self._entries = jsondata['entries']
@@ -77,10 +79,10 @@ class Database:
         return self._sigvalid
 
     def __str__(self):
-        return '<assword.Database "%s">' % (self._dbpath)
+        return '<impass.Database "%s">' % (self._dbpath)
 
     def __repr__(self):
-        return 'assword.Database("%s")' % (self._dbpath)
+        return 'impass.Database("%s")' % (self._dbpath)
 
     def __getitem__(self, context):
         """Return database entry for exact context."""

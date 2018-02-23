@@ -15,15 +15,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/ .
 #
 # Modified 2012 Jameson Rollins <jameson.rollins@ligo.org>
-#   for use by aLIGO Guardian
-
-if [ ${BASH_VERSINFO[0]} -lt 4 ]; then
-    echo "Error: The notmuch test suite requires a bash version >= 4.0"
-    echo "due to use of associative arrays within the test suite."
-    echo "Please try again with a newer bash (or help us fix the"
-    echo "test suite to be more portable). Thanks."
-    exit 1
-fi
+#   for use by impass
 
 # if --tee was passed, write the output not only to the terminal, but
 # additionally to the file test-results/$BASENAME.out, too.
@@ -423,7 +415,7 @@ test_run_ () {
 test_skip () {
 	test_count=$(($test_count+1))
 	to_skip=
-	for skp in $GUARD_SKIP_TESTS
+	for skp in $IMPASS_SKIP_TESTS
 	do
 		case $this_test.$test_count in
 		$skp)
@@ -709,10 +701,10 @@ else
 fi
 
 this_test=${0##*/}
-for skp in $GUARD_SKIP_TESTS
+for skp in $IMPASS_SKIP_TESTS
 do
 	to_skip=
-	for skp in $GUARD_SKIP_TESTS
+	for skp in $IMPASS_SKIP_TESTS
 	do
 		case "$this_test" in
 		$skp)

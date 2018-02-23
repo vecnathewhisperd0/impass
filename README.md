@@ -1,7 +1,7 @@
-Assword - simple and secure password management system
+impass - simple and secure password management system
 ======================================================
 
-Assword is a secure password manager that relies on your OpenPGP key
+impass is a secure password manager that relies on your OpenPGP key
 for security and is designed to integrate in a minimal fashion into
 any X11 window manager.
 
@@ -15,16 +15,18 @@ without displaying on the screen.  Multiple retrieval methods are
 available, including auto-typing them directly into an X11 window
 (default), or inserting them into the X11 clipboard.
 
+impass was previously known as "assword".
+
 
 Contact
 =======
 
-Assword was written by:
+impass was written by:
 
     Jameson Graef Rollins <jrollins@finestructure.net>
     Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 
-Assword has a mailing list:
+impass has a mailing list:
 
     assword@lists.mayfirst.org
     https://lists.mayfirst.org/mailman/listinfo/assword
@@ -35,16 +37,15 @@ We also hang out on IRC:
     server:  irc.oftc.net
 
 
-Getting Assword
-===============
+Getting impass
+==============
 
 Source
 ------
 
 Clone the repo:
 
-    $ git clone git://finestructure.net/assword
-    $ cd assword
+    $ git clone https://salsa.debian.org/debian/impass.git
 
 Dependencies :
   * python3
@@ -59,7 +60,7 @@ Recommends (for curses UI) :
 Debian
 ------
 
-Assword is now available in Debian: https://packages.qa.debian.org/assword
+impass is now available in Debian: https://packages.qa.debian.org/impass
 
 Debian/Ubuntu snapshot packages can also be easily made from the git
 source.  You can build the package from any branch but it requires an
@@ -72,11 +73,11 @@ Then:
     $ sudo apt-get install build-essential devscripts pkg-config python3-all-dev python3-setuptools debhelper dpkg-dev fakeroot
     $ make debian-snapshot
     $ sudo apt-get install python3-gpg python3-gi python3-pkg-resources python3-xdo xclip
-    $ sudo dpkg -i build/assword_0.*_amd64.deb
+    $ sudo dpkg -i build/impass_0.*_amd64.deb
 
 
-Using Assword
-=============
+Using impass
+============
 
-See the included assword(1) man page or built-in help string for
+See the included impass(1) man page or built-in help string for
 detailed usage.
