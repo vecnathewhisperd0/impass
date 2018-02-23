@@ -1,7 +1,7 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: assword
 Upstream-Contact: Jameson Rollins <jrollins@finestructure.net>
-Source: git://finestructure.net/assword
+Source: https://salsa.debian.org/debian/impass
 
 Files: *
 Copyright: 2012-2013, Jameson Rollins <jrollins@finestructure.net>
