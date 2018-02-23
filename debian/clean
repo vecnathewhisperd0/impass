@@ -3,3 +3,5 @@ assword.egg-info/
 test/gnupg/random_seed
 test/gnupg/private-keys-v1.d/
 test/gnupg/.gpg-v21-migrated
+test/tmp.cli/
+test/tmp.library/
