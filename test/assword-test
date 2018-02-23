@@ -46,6 +46,9 @@ trap - HUP INT TERM
 
 # Report results
 ./lib/test-aggregate-results test-results/*
+ev=$?
 
 # Clean up
 rm -rf test-results
+
+exit $ev
