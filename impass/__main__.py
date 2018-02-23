@@ -569,10 +569,17 @@ def main():
     if os.path.exists(assword_dir) and os.path.isdir(assword_dir) and not os.getenv('IMPASS_DB'):
         try:
             os.rename(assword_dir, IMPASS_DIR)
+            linkok = False
+            try:
+                os.symlink(IMPASS_DIR, assword_dir)
+                linkok = True
+            except:
+                pass
+            print("renamed ~/.assword -> ~/.impass", file=sys.stderr)
+            if not linkok:
+                print("(tried to symlink ~/.assword to ~/.impass as well, but symlinking failed)", file=sys.stderr)
         except:
             sys.exit("Could not rename old assword directory ~/.assword -> ~/.impass.\nPlease check ~/.impass path.")
-        os.symlink(IMPASS_DIR, assword_dir)
-        print("renamed ~/.assword -> ~/.impass", file=sys.stderr)
     ### DEPRECATE
 
     cmd = sys.argv[1]
