@@ -1,3 +1,12 @@
+impass (0.12-1) unstable; urgency=medium
+
+  * New upstream release, renaming "assword" to "impass"
+    (Closes: #891211)
+  * rename package to impass, creating transitional dummy assword package
+  * ensure that pybuild knows where to install
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Fri, 23 Feb 2018 09:19:46 -0800
+
 assword (0.11-1) unstable; urgency=medium
 
   * move to debhelper 11
