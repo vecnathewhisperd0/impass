@@ -87,3 +87,5 @@
    things (we might need to expand python-xdo to get these guesses)
 
  * ENHANCEMENT: test for various PASSWORD values
+
+ * ENHANCEMENT: gui error dialog
