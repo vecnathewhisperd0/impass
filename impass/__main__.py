@@ -551,6 +551,10 @@ def main():
         print(format_commands(), file=sys.stderr)
         error(1)
 
+    cmd = sys.argv[1]
+    args = sys.argv[2:]
+    func = get_func(cmd)
+
     ### DEPRECATE: this is for the assword->impass transition
     if os.path.basename(sys.argv[0]) == 'assword':
         print("""WARNING: assword has been renamed "impass".  Please update your invocations.""", file=sys.stderr)
@@ -566,7 +570,11 @@ def main():
         for var in vfound:
             print("  ASSWORD_{var} -> IMPASS_{var}".format(var=var), file=sys.stderr)
     assword_dir = os.path.join(os.path.expanduser('~'),'.assword')
-    if os.path.exists(assword_dir) and os.path.isdir(assword_dir) and not os.getenv('IMPASS_DB'):
+    if os.path.exists(assword_dir) and \
+       (not os.path.islink(assword_dir)) and \
+       os.path.isdir(assword_dir) and \
+       (not os.getenv('IMPASS_DB')) and \
+       cmd not in ['help', 'version']:
         try:
             os.rename(assword_dir, IMPASS_DIR)
             linkok = False
@@ -582,9 +590,6 @@ def main():
             sys.exit("Could not rename old assword directory ~/.assword -> ~/.impass.\nPlease check ~/.impass path.")
     ### DEPRECATE
 
-    cmd = sys.argv[1]
-    args = sys.argv[2:]
-    func = get_func(cmd)
     #print(cmd, func, args)
     func(args)
 
