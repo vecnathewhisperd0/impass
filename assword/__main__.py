@@ -294,7 +294,8 @@ def dump(args):
                         help="substring match for contexts")
     if args is None: return parser
     args = parser.parse_args(args)
-    db = open_db()
+    keyid = get_keyid()
+    db = open_db(keyid)
     results = db.search(args.string)
     output = {}
     for context in results:
