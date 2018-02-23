@@ -25,7 +25,7 @@ setup(
     long_description = long_description,
     author = 'Jameson Rollins',
     author_email = 'jrollins@finestructure.net',
-    url = 'https://finestructure.net/impass',
+    url = 'https://salsa.debian.org/debian/impass',
     license = 'GPLv3+',
     packages = ['impass'],
     keywords = ['passwords password-management'],
