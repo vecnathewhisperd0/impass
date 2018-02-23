@@ -61,7 +61,8 @@ class Database:
                 raise DatabaseError(e)
 
             # unpack the json data
-            if 'type' not in jsondata or jsondata['type'] != self._type:
+            # FIXME: we accept "assword" type for backwords compatibility
+            if 'type' not in jsondata or jsondata['type'] not in [self._type, 'assword']:
                 raise DatabaseError('Database is not a proper impass database.')
             if 'version' not in jsondata or jsondata['version'] != self._version:
                 raise DatabaseError('Incompatible database.')
