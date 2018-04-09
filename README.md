@@ -50,8 +50,12 @@ Clone the repo:
 Dependencies :
   * python3
   * python3-gpg - Python bindings for the GPGME library
-  * python3-gtk2 - Python bindings for the GTK+ widget set
-  * python3-pkg-resources - Package Discovery and Resource Access
+  * python3-setuptools - Python packaging and distribution utilities
+
+Recommends (for graphical UI):
+
+  * python3-gi - Python bindings for GObject Introspection
+  * gir1.2-gtk-3.0 - GObject Introspection for GTK 3+ (GUI toolkit)
 
 Recommends (for curses UI) :
   * python3-xdo - Support for simulating X11 input (libxdo bindings)
@@ -60,21 +64,20 @@ Recommends (for curses UI) :
 Debian
 ------
 
-impass is now available in Debian: https://packages.qa.debian.org/impass
+impass is available in Debian: https://packages.qa.debian.org/impass
 
 Debian/Ubuntu snapshot packages can also be easily made from the git
 source.  You can build the package from any branch but it requires an
 up-to-date local branch of origin/debian, e.g.:
 
-    $ git branch debian origin/debian
+    $ git branch debian/master origin/debian/master
 
 Then:
 
-    $ sudo apt-get install build-essential devscripts pkg-config python3-all-dev python3-setuptools debhelper dpkg-dev fakeroot
+    $ sudo apt install build-essential devscripts pkg-config python3-all-dev python3-setuptools debhelper dpkg-dev fakeroot txt2man
     $ make debian-snapshot
-    $ sudo apt-get install python3-gpg python3-gi python3-pkg-resources python3-xdo xclip
-    $ sudo dpkg -i build/impass_0.*_amd64.deb
-
+    $ sudo apt install build/impass_*.deb
+ 
 
 Using impass
 ============
