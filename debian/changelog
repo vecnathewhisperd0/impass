@@ -1,3 +1,10 @@
+impass (0.12.1-1) unstable; urgency=high
+
+  * New upstream minor release for python3-gpg (Closes: #912092, #911568)
+  * Update standards version
+
+ -- Jameson Graef Rollins <jrollins@finestructure.net>  Mon, 26 Nov 2018 21:16:39 -0800
+
 impass (0.12-1) unstable; urgency=medium
 
   * New upstream release, renaming "assword" to "impass"
