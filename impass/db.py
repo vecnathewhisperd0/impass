@@ -101,8 +101,7 @@ class Database:
         self._sigvalid = False
         with open(path, 'rb') as f:
             try:
-                k = self._gpg.get_key(self._keyid)
-                data, _, vfy = self._gpg.decrypt(f, verify=[k])
+                data, _, vfy = self._gpg.decrypt(f, verify=True)
                 for s in vfy.signatures:
                     if s.validity >= gpg.constants.VALIDITY_FULL:
                         self._sigvalid = True

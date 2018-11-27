@@ -28,7 +28,7 @@ debian-snapshot:
 	rm -rf build/deb
 	mkdir -p build/deb/debian
 	git archive HEAD | tar -x -C build/deb/
-	git archive debian:debian | tar -x -C build/deb/debian/
+	git archive --format=tar debian/master:debian | tar -x -C build/deb/debian/
 	cd build/deb; dch -b -v $(VERSION) -D UNRELEASED 'test build, not for upload'
 	cd build/deb; echo '3.0 (native)' > debian/source/format
 	cd build/deb; debuild -us -uc
