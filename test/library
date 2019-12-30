@@ -31,7 +31,7 @@ test_expect_equal_file OUTPUT EXPECTED
 test_begin_subtest "decrypt db"
 python3 - <<EOF 2>&1 | sed "s|$IMPASS_DB|IMPASS_DB|" >OUTPUT
 import impass
-db = impass.Database("$IMPASS_DB")
+db = impass.Database("$IMPASS_DB", '$IMPASS_KEYID')
 print(db)
 print(db.version)
 print('foo@bar' in db)
