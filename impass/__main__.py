@@ -28,6 +28,11 @@ def xclip(text):
                          stdin=subprocess.PIPE)
     p.communicate(text.encode('utf-8'))
 
+
+def log(*args):
+    print(*args, file=sys.stderr)
+
+
 ############################################################
 # Return codes:
 # 1 command/load line error
@@ -38,8 +43,9 @@ def xclip(text):
 ############################################################
 def error(code, msg=''):
     if msg:
-        print(msg, file=sys.stderr)
+        log(msg)
     sys.exit(code)
+
 
 def open_db(keyid=None, create=False):
     DBPATH = os.getenv('IMPASS_DB', os.path.join(IMPASS_DIR, 'db'))
@@ -50,12 +56,13 @@ See 'impass help' for more information.""")
     try:
         db = Database(DBPATH, keyid)
     except gpg.errors.GPGMEError as e:
-        error(20, 'Decryption error: %s' % (e))
+        error(20, "Decryption error: {}".format(e))
     except DatabaseError as e:
-        error(10, 'Impass database error: %s' % e.msg)
+        error(10, "Impass database error: {}".format(e.msg))
     if db.sigvalid is False:
-        print("WARNING: could not validate OpenPGP signature on db file.", file=sys.stderr)
+        log("WARNING: could not validate OpenPGP signature on db file.")
     return db
+
 
 def get_keyid():
     keyid = os.getenv('IMPASS_KEYID')
@@ -67,9 +74,9 @@ def get_keyid():
 
     save = False
     if not keyid:
-        print("OpenPGP key ID of encryption target not specified.", file=sys.stderr)
-        print("Please provide key ID in IMPASS_KEYID environment variable,", file=sys.stderr)
-        print("or specify key ID now to save in ~/.impass/keyid file.", file=sys.stderr)
+        log("OpenPGP key ID of encryption target not specified.")
+        log("Please provide key ID in IMPASS_KEYID environment variable,")
+        log("or specify key ID now to save in ~/.impass/keyid file.")
         keyid = input('OpenPGP key ID: ')
         if keyid == '':
             keyid = None
@@ -83,8 +90,8 @@ def get_keyid():
         gpgctx = gpg.Context()
         gpgctx.get_key(keyid, secret=False)
     except gpg.errors.GPGMEError as e:
-        print("GPGME error for key ID %s:" % keyid, file=sys.stderr)
-        print("  %s" % e, file=sys.stderr)
+        log("GPGME error for key ID {}:".format(keyid))
+        log("  {}".format(e))
         error(20)
 
     if save:
@@ -94,6 +101,7 @@ def get_keyid():
             f.write(keyid)
 
     return keyid
+
 
 class Completer:
     def __init__(self, completions=None):
@@ -106,6 +114,7 @@ class Completer:
             return matching[index]
         except IndexError:
             return None
+
 
 def input_complete(prompt, completions=None, default=None):
     try:
@@ -128,6 +137,7 @@ def input_complete(prompt, completions=None, default=None):
     except KeyboardInterrupt:
         error(-1)
 
+
 def retrieve_context(arg, prompt='context: ', default=None, stdin=True, db=None):
     if arg == '-' and stdin:
         context = sys.stdin.read()
@@ -140,6 +150,7 @@ def retrieve_context(arg, prompt='context: ', default=None, stdin=True, db=None)
         context = arg
     return context.strip()
 
+
 class PasswordAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         if not os.getenv('IMPASS_PASSWORD'):
@@ -151,7 +162,6 @@ class PasswordAction(argparse.Action):
                 password = int(os.getenv('IMPASS_PASSWORD'))
             except ValueError:
                 error(1, "IMPASS_PASSWORD environment variable is neither int nor 'prompt'.")
-        # print('%s %s %s' % (parser, namespace, values))
         if values == ':':
             password = ':'
         elif values:
@@ -161,12 +171,14 @@ class PasswordAction(argparse.Action):
                 error(666, "Don't type your password on the command line!!!")
         setattr(namespace, self.dest, password)
 
+
 def retrieve_password(pwspec):
     if pwspec == ':':
         return input_password()
     else:
-        print("Auto-generating password...", file=sys.stderr)
+        log("Auto-generating password...")
         return pwspec
+
 
 def input_password():
     try:
@@ -202,7 +214,7 @@ def add(args):
 
     context = retrieve_context(args.context)
     if context in db:
-        error(2, "Context '%s' already exists.")
+        error(2, "Context '{}' already exists.".format(context))
 
     password = retrieve_password(args.pwspec)
 
@@ -210,8 +222,9 @@ def add(args):
         db.add(context, password)
         db.save()
     except DatabaseError as e:
-        error(10, 'Impass database error: %s' % e.msg)
-    print("New entry writen.", file=sys.stderr)
+        error(10, "Impass database error: {}".format(e.msg))
+    log("New entry writen.")
+
 
 def replace(args):
     """Replace password for entry.
@@ -234,7 +247,7 @@ def replace(args):
 
     context = retrieve_context(args.context, db=db)
     if context not in db:
-        error(2, "Context '%s' not found." % (context))
+        error(2, "Context '{}' not found.".format(context))
 
     password = retrieve_password(args.pwspec)
 
@@ -242,8 +255,9 @@ def replace(args):
         db.replace(context, password)
         db.save()
     except DatabaseError as e:
-        error(10, 'Impass database error: %s' % e.msg)
-    print("Password replaced.", file=sys.stderr)
+        error(10, "Impass database error: {}".format(e.msg))
+    log("Password replaced.")
+
 
 def update(args):
     """Update context for existing entry, keeping password the same.
@@ -266,18 +280,19 @@ def update(args):
 
     old_context = retrieve_context(args.old_context, prompt='old context: ', db=db)
     if old_context not in db:
-        error(2, "Context '%s' not found" % old_context)
+        error(2, "Context '{}' not found".format(old_context))
 
     new_context = retrieve_context(args.new_context, prompt='new context: ', default=old_context, stdin=False)
     if new_context in db:
-        error(2, "Context '%s' already exists." % new_context)
+        error(2, "Context '{}' already exists.".format(new_context))
 
     try:
         db.update(old_context, new_context)
         db.save()
     except DatabaseError as e:
-        error(10, 'Impass database error: %s' % e.msg)
-    print("Entry updated.", file=sys.stderr)
+        error(10, "Impass database error: {}".format(e.msg))
+    log("Entry updated.")
+
 
 def dump(args):
     """Dump password database to stdout as json.
@@ -304,6 +319,7 @@ def dump(args):
         if os.getenv('IMPASS_DUMP_PASSWORDS'):
             output[context]['password'] = results[context]['password']
     print(json.dumps(output, sort_keys=True, indent=2))
+
 
 def gui(args, method=os.getenv('IMPASS_XPASTE', 'xdo')):
     """Launch minimal X GUI.
@@ -342,7 +358,7 @@ Please install python3-xdo.""")
     elif method == 'xclip':
         pass
     else:
-        error(1, "Unknown X paste method '%s'." % method)
+        error(1, "Unknown X paste method '{}'.".format(method))
     keyid = get_keyid()
     db = open_db(keyid)
     result = Gui(db, query=args.string).returnValue()
@@ -374,10 +390,10 @@ def remove(args):
 
     context = retrieve_context(args.context, db=db)
     if context not in db:
-        error(2, "Context '%s' not found." % (context))
+        error(2, "Context '{}' not found.".format(context))
 
     try:
-        print("Really remove entry '%s'?" % (context), file=sys.stderr)
+        log("Really remove entry '{}'?".format(context))
         response = input("Type 'yes' to remove: ")
     except KeyboardInterrupt:
         error(-1)
@@ -388,8 +404,9 @@ def remove(args):
         db.remove(context)
         db.save()
     except DatabaseError as e:
-        error(10, 'Impass database error: %s' % e.msg)
-    print("Entry removed.", file=sys.stderr)
+        error(10, "Impass database error: {}".format(e.msg))
+    log("Entry removed.")
+
 
 def print_help(args):
     """Full usage or command help (also '-h' after command)."""
@@ -406,6 +423,7 @@ def print_help(args):
     # help
     func = get_func(cmd)
     func(['-h'])
+
 
 def version(args):
     """Print version."""
@@ -494,6 +512,7 @@ AUTHOR
            cmds=format_commands(man=True),
            octets=DEFAULT_NEW_PASSWORD_OCTETS).strip())
 
+
 def format_commands(man=False):
     prefix = ' '*8
     wrapper = textwrap.TextWrapper(
@@ -516,6 +535,7 @@ def format_commands(man=False):
         output = f.getvalue()
     return output.rstrip()
 
+
 CMDS = collections.OrderedDict([
     ('add', add),
     ('replace', replace),
@@ -532,6 +552,7 @@ ALIAS = {
     '-h': 'help',
     }
 
+
 def get_func(cmd):
     """Retrieve the appropriate function from the command argument."""
     if cmd in ALIAS:
@@ -539,16 +560,17 @@ def get_func(cmd):
     try:
         return CMDS[cmd]
     except KeyError:
-        print("Unknown command:", cmd, file=sys.stderr)
-        print("See 'help' for usage.", file=sys.stderr)
+        log("Unknown command: {}".format(cmd))
+        log("See 'help' for usage.")
         error(1)
+
 
 def main():
     if len(sys.argv) < 2:
-        print("Command not specified.", file=sys.stderr)
-        print('usage: '+synopsis, file=sys.stderr)
-        print(file=sys.stderr)
-        print(format_commands(), file=sys.stderr)
+        log("Command not specified.")
+        log("usage: {}".format(synopsis))
+        log()
+        log(format_commands())
         error(1)
 
     cmd = sys.argv[1]
@@ -557,7 +579,7 @@ def main():
 
     ### DEPRECATE: this is for the assword->impass transition
     if os.path.basename(sys.argv[0]) == 'assword':
-        print("""WARNING: assword has been renamed "impass".  Please update your invocations.""", file=sys.stderr)
+        log("""WARNING: assword has been renamed "impass".  Please update your invocations.""")
     vfound = []
     for var in ['DB', 'KEYFILE', 'KEYID', 'PASSWORD', 'DUMP_PASSWORDS', 'XPASTE']:
         val = os.getenv('ASSWORD_'+var)
@@ -566,9 +588,9 @@ def main():
             if not os.getenv('IMPASS_'+var):
                 os.environ['IMPASS_'+var] = val
     if vfound:
-        print("""WARNING: assword has been renamed "impass".  Please update your environment variables:""", file=sys.stderr)
+        log("""WARNING: assword has been renamed "impass".  Please update your environment variables:""")
         for var in vfound:
-            print("  ASSWORD_{var} -> IMPASS_{var}".format(var=var), file=sys.stderr)
+            log("  ASSWORD_{var} -> IMPASS_{var}".format(var=var))
     assword_dir = os.path.join(os.path.expanduser('~'),'.assword')
     if os.path.exists(assword_dir) and \
        (not os.path.islink(assword_dir)) and \
@@ -588,10 +610,15 @@ def main():
                 print("(tried to symlink ~/.assword to ~/.impass as well, but symlinking failed)", file=sys.stderr)
         except:
             sys.exit("Could not rename old assword directory ~/.assword -> ~/.impass.\nPlease check ~/.impass path.")
+        os.symlink(IMPASS_DIR, assword_dir)
+        log("renamed ~/.assword -> ~/.impass")
     ### DEPRECATE
 
-    #print(cmd, func, args)
+    cmd = sys.argv[1]
+    args = sys.argv[2:]
+    func = get_func(cmd)
     func(args)
+
 
 if __name__ == "__main__":
     main()
