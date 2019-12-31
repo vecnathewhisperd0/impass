@@ -1,3 +1,11 @@
+impass (0.12.2-1) unstable; urgency=medium
+
+  * New upstream rev release (Closes: #854702)
+  * Update to debhelper 12
+  * Update to standards version 4.4.1
+
+ -- Jameson Graef Rollins <jrollins@finestructure.net>  Mon, 30 Dec 2019 19:26:07 -0800
+
 impass (0.12.1-1) unstable; urgency=high
 
   * New upstream minor release for python3-gpg (Closes: #912092, #911568)
