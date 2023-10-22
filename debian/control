@@ -45,17 +45,3 @@ Description: Simple and secure password management and retrieval system
  are securely retrieved without displaying on the screen.  Multiple
  retrieval methods are available, including auto-typing them directly
  into an X11 window (default), or inserting them into the X11 clipboard.
-
-Package: assword
-Section: oldlibs
-Architecture: all
-Multi-Arch: foreign
-Depends:
- impass (= ${binary:Version}),
- ${misc:Depends},
-Description: Simple password manager (dummy transitional package)
- Assword has been renamed to Impass.
- .
- This is a dummy transitional package; please use "impass" instead.
- .
- It is safe to remove this package.
