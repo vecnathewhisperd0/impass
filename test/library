@@ -43,6 +43,21 @@ True
 EOF
 test_expect_equal_file OUTPUT EXPECTED
 
+test_begin_subtest "decrypt db with bad signature"
+python3 - <<EOF 2>&1 | sed "s|$IMPASS_DB|IMPASS_DB|" >OUTPUT
+import impass
+db = impass.Database("$IMPASS_DB", 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
+print(db)
+print(db.version)
+print('foo@bar' in db)
+EOF
+cat <<EOF >EXPECTED
+<impass.Database "IMPASS_DB">
+1
+True
+EOF
+test_expect_equal_file OUTPUT EXPECTED
+
 # change permission to make sure permissions are preserved after
 # re-writes
 chmod 610 "$IMPASS_DB"
