@@ -4,7 +4,7 @@ import os
 import io
 import sys
 import json
-import gpg
+import gpg  # type: ignore
 import getpass
 import argparse
 import textwrap
@@ -347,7 +347,7 @@ def gui(args, method=os.getenv('IMPASS_XPASTE', 'xdo')):
     from .gui import Gui
     if method == 'xdo':
         try:
-            import xdo
+            import xdo  # type: ignore
         except ModuleNotFoundError:
             error(1, """The xdo module is not found, so the 'xdo' paste method is not available.
 Please install python3-xdo.""")

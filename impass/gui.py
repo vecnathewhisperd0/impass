@@ -1,7 +1,7 @@
 import os
-import gi
+import gi  # type: ignore
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk  # type: ignore
 from gi.repository import GObject
 from gi.repository import Gdk
 

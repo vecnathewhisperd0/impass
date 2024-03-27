@@ -3,7 +3,7 @@ import io
 import stat
 import json
 import time
-import gpg
+import gpg  # type: ignore
 import codecs
 import datetime
 
