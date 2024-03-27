@@ -1,3 +1,16 @@
+impass (0.12.3-1) unstable; urgency=medium
+
+  * New upstream minor cleanup release (Closes: #1053094)
+  * Update to debhelper 13
+  * Standards-Version: bump to 4.6.2 (no changes needed)
+  * move from pkg-config to pkgconf
+  * added debian/watch
+
+  [ Bastian Germann ]
+  * drop assword legacy package (Closes: #1038334)
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Wed, 27 Mar 2024 08:31:45 -0400
+
 impass (0.12.2-1) unstable; urgency=medium
 
   * New upstream rev release (Closes: #854702)
