@@ -348,7 +348,7 @@ def gui(args, method=os.getenv('IMPASS_XPASTE', 'xdo')):
     if method == 'xdo':
         try:
             import xdo
-        except:
+        except ModuleNotFoundError:
             error(1, """The xdo module is not found, so the 'xdo' paste method is not available.
 Please install python3-xdo.""")
         # initialize xdo
