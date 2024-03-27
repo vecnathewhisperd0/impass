@@ -7,11 +7,13 @@ import gpg  # type: ignore
 import codecs
 import datetime
 
+from typing import Optional, Dict, Iterator
+
 ############################################################
 
 DEFAULT_NEW_PASSWORD_OCTETS = 18
 
-def pwgen(nbytes):
+def pwgen(nbytes: int) -> str:
     """Return *nbytes* bytes of random data, base64-encoded."""
     s = os.urandom(nbytes)
     b = codecs.encode(s, 'base64')
@@ -21,15 +23,15 @@ def pwgen(nbytes):
 ############################################################
 
 class DatabaseError(Exception):
-    def __init__(self, msg):
+    def __init__(self, msg: str) -> None:
         self.msg = msg
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self.msg)
 
 class Database:
     """An impass database."""
 
-    def __init__(self, dbpath=None, keyid=None):
+    def __init__(self, dbpath: Optional[str]=None, keyid: Optional[str]=None) -> None:
         """Database at dbpath will be decrypted and loaded into memory.
 
         If dbpath is not specified, an empty database will be
@@ -46,11 +48,11 @@ class Database:
         # default database information
         self._type = 'impass'
         self._version = 1
-        self._entries = {}
+        self._entries: Dict[str,Dict[str,str]] = {}
 
         self._gpg = gpg.Context()
         self._gpg.armor = True
-        self._sigvalid = None
+        self._sigvalid: Optional[bool] = None
 
         if self._dbpath and os.path.exists(self._dbpath):
             try:
@@ -58,7 +60,7 @@ class Database:
                 # FIXME: trap exception if json corrupt
                 jsondata = json.loads(cleardata.decode('utf-8'))
             except IOError as e:
-                raise DatabaseError(e)
+                raise DatabaseError(str(e))
 
             # unpack the json data
             # FIXME: we accept "assword" type for backwords compatibility
@@ -69,34 +71,34 @@ class Database:
             self._entries = jsondata['entries']
 
     @property
-    def version(self):
+    def version(self) -> int:
         """Database version."""
         return self._version
 
     @property
-    def sigvalid(self):
+    def sigvalid(self) -> Optional[bool]:
         """Validity of OpenPGP signature on db file."""
         return self._sigvalid
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '<impass.Database "%s">' % (self._dbpath)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'impass.Database("%s")' % (self._dbpath)
 
-    def __getitem__(self, context):
+    def __getitem__(self, context: str) -> Dict[str,str]:
         """Return database entry for exact context."""
         return self._entries[context]
 
-    def __contains__(self, context):
+    def __contains__(self, context: str) -> bool:
         """True if context string in database."""
         return context in self._entries
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         """Iterator of all database contexts."""
         return iter(self._entries)
 
-    def _decryptDB(self, path):
+    def _decryptDB(self, path: str) -> bytes:
         data = None
         self._sigvalid = False
         with open(path, 'rb') as f:
@@ -109,9 +111,11 @@ class Database:
                 # retry decryption without verification:
                 with open(path, 'rb') as try2:
                     data, _, _ = self._gpg.decrypt(try2, verify=False)
+        if not isinstance(data, bytes):
+            raise DatabaseError(f"expected gpg.Context.decrypt() to return bytes, got {type(data)}")
         return data
 
-    def _encryptDB(self, data, keyid):
+    def _encryptDB(self, data: io.BytesIO, keyid: Optional[str]) -> bytes:
         # The signer and the recipient are assumed to be the same.
         # FIXME: should these be separated?
         try:
@@ -124,9 +128,11 @@ class Database:
         encdata, _, _ = self._gpg.encrypt(data, [recipient],
                                           always_trust=True,
                                           compress=False)
+        if not isinstance(encdata, bytes):
+            raise DatabaseError(f"expected gpg.Context.decrypt() to return bytes, got {type(data)}")
         return encdata
 
-    def _set_entry(self, context, password=None):
+    def _set_entry(self, context: str, password: Optional[str]=None) -> Dict[str,str]:
         if not isinstance(password, str):
             if password is None:
                 bytes = DEFAULT_NEW_PASSWORD_OCTETS
@@ -138,7 +144,7 @@ class Database:
         self._entries[context] = e
         return e
 
-    def add(self, context, password=None):
+    def add(self, context: str, password: Optional[str]=None) -> Dict[str,str]:
         """Add new entry.
 
         If password is None, one will be generated automatically.  If
@@ -158,7 +164,7 @@ class Database:
             raise DatabaseError("Context already exists (see replace())")
         return self._set_entry(context, password)
 
-    def replace(self, context, password=None):
+    def replace(self, context: str, password: Optional[str]=None) -> Dict[str,str]:
         """Replace entry password.
 
         If password is None, one will be generated automatically.  If
@@ -176,7 +182,7 @@ class Database:
             raise DatabaseError("Context not found (see add())")
         return self._set_entry(context, password)
 
-    def update(self, old_context, new_context):
+    def update(self, old_context: str, new_context: str) -> None:
         """Update entry context.
 
         If the old context is not in the db a DatabaseError will be
@@ -192,7 +198,7 @@ class Database:
         self.add(new_context, password)
         self.remove(old_context)
 
-    def remove(self, context):
+    def remove(self, context: str) -> None:
         """Remove entry.
 
         Database changes are not saved to disk until the save() method
@@ -203,7 +209,7 @@ class Database:
             raise DatabaseError("Context '%s' not found" % context)
         del self._entries[context]
 
-    def save(self, keyid=None, path=None):
+    def save(self, keyid: Optional[str]=None, path: Optional[str]=None) -> None:
         """Save database to disk.
 
         Key ID must either be specified here or at database initialization.
@@ -238,7 +244,7 @@ class Database:
         os.chmod(newpath, mode)
         os.rename(newpath, path)
 
-    def search(self, string=None):
+    def search(self, string: Optional[str]=None) -> Dict[str,Dict[str,str]]:
         """Search for string in contexts.
 
         If query is None, all entries will be returned.
