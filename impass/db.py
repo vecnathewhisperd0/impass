@@ -2,7 +2,6 @@ import os
 import io
 import stat
 import json
-import time
 import gpg  # type: ignore
 import codecs
 import datetime
@@ -63,7 +62,7 @@ class Database:
 
         if self._dbpath and os.path.exists(self._dbpath):
             try:
-                cleardata = self._decryptDB(self._dbpath)
+                cleardata = self._decrypt_db(self._dbpath)
                 # FIXME: trap exception if json corrupt
                 jsondata = json.loads(cleardata.decode("utf-8"))
             except IOError as e:
@@ -108,7 +107,7 @@ class Database:
         """Iterator of all database contexts."""
         return iter(self._entries)
 
-    def _decryptDB(self, path: str) -> bytes:
+    def _decrypt_db(self, path: str) -> bytes:
         data = None
         self._sigvalid = False
         with open(path, "rb") as f:
@@ -117,7 +116,7 @@ class Database:
                 for s in vfy.signatures:
                     if s.validity >= gpg.constants.VALIDITY_FULL:
                         self._sigvalid = True
-            except:
+            except gpg.errors.GPGMEError:
                 # retry decryption without verification:
                 with open(path, "rb") as try2:
                     data, _, _ = self._gpg.decrypt(try2, verify=False)
@@ -127,13 +126,13 @@ class Database:
             )
         return data
 
-    def _encryptDB(self, data: io.BytesIO, keyid: Optional[str]) -> bytes:
+    def _encrypt_db(self, data: io.BytesIO, keyid: Optional[str]) -> bytes:
         # The signer and the recipient are assumed to be the same.
         # FIXME: should these be separated?
         try:
             recipient = self._gpg.get_key(keyid or self._keyid, secret=False)
             signer = self._gpg.get_key(keyid or self._keyid, secret=False)
-        except:
+        except gpg.errors.GPGMEError:
             raise DatabaseError("Could not retrieve GPG encryption key.")
         self._gpg.signers = [signer]
         data.seek(0)
@@ -247,7 +246,7 @@ class Database:
             "entries": self._entries,
         }
         cleardata = io.BytesIO(json.dumps(jsondata, indent=2).encode("utf-8"))
-        encdata = self._encryptDB(cleardata, keyid)
+        encdata = self._encrypt_db(cleardata, keyid)
         newpath = path + ".new"
         bakpath = path + ".bak"
         mode = stat.S_IRUSR | stat.S_IWUSR
