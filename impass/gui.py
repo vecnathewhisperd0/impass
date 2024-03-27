@@ -1,6 +1,7 @@
 import os
 import gi  # type: ignore
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # type: ignore
 from gi.repository import GObject
 from gi.repository import Gdk
@@ -8,6 +9,7 @@ from gi.repository import Gdk
 from .db import pwgen, DEFAULT_NEW_PASSWORD_OCTETS
 
 ############################################################
+
 
 # Assumes that the func_data is set to the number of the text column in the
 # model.
@@ -17,7 +19,9 @@ def _match_func(completion, key, iter, column):
     if text.lower().find(key.lower()) > -1:
         return True
     return False
-_gui_layout = '''<?xml version="1.0" encoding="UTF-8"?>
+
+
+_gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
@@ -314,30 +318,32 @@ _gui_layout = '''<?xml version="1.0" encoding="UTF-8"?>
     </child>
   </object>
 </interface>
-'''
+"""
+
 
 class Gui:
     """Impass X-based query UI."""
+
     def __init__(self, db, query=None):
-        '''
-+--------------------- warning --------------------+
-|                    notification                  |
-+--------------------------------------------------+
-|                    description                   |
-+----------------- simplebox ----------------------+
-| [_simplectxentry____] <simplebtn> <simplemenubtn>|
-+------------------- ctxbox -----------------------+
-|          | +----- ctxbox2 -----------------------+
-| ctxlabel | | [_ctxentry________________________] |
-|          | +----- ctxwarning --------------------+
-|          | | ctxwarninglabel                     | (ctxwarning is only shown when ctxentry is changed to match an existing entry (createbtn is also disabled in this case))
-|          | +-------------------------------------+
-+------------------- passbox ----------------------+
-|           +------ passbox2 --------+             |
-| passlabel | [_passentry__________] | <createbtn> | createbtn saves, emits, and closes
-|           | passdescription        |             |  
-+-----------+------------------------+-------------+
-'''
+        """
+        +--------------------- warning --------------------+
+        |                    notification                  |
+        +--------------------------------------------------+
+        |                    description                   |
+        +----------------- simplebox ----------------------+
+        | [_simplectxentry____] <simplebtn> <simplemenubtn>|
+        +------------------- ctxbox -----------------------+
+        |          | +----- ctxbox2 -----------------------+
+        | ctxlabel | | [_ctxentry________________________] |
+        |          | +----- ctxwarning --------------------+
+        |          | | ctxwarninglabel                     | (ctxwarning is only shown when ctxentry is changed to match an existing entry (createbtn is also disabled in this case))
+        |          | +-------------------------------------+
+        +------------------- passbox ----------------------+
+        |           +------ passbox2 --------+             |
+        | passlabel | [_passentry__________] | <createbtn> | createbtn saves, emits, and closes
+        |           | passdescription        |             |
+        +-----------+------------------------+-------------+
+        """
         self.db = db
         self.query = None
         self.results = None
@@ -363,33 +369,33 @@ class Gui:
                 return
 
         self.builder = Gtk.Builder.new_from_string(_gui_layout, len(_gui_layout))
-        self.window = self.builder.get_object('impass-gui')
-        self.entry = self.builder.get_object('simplectxentry')
-        self.simplebtn = self.builder.get_object('simplebtn')
-        self.simplemenubtn = self.builder.get_object('simplemenubtn')
-        self.emitmenu = self.builder.get_object('emitmenu')
-        self.createmenu = self.builder.get_object('createmenu')
-        self.warning = self.builder.get_object('warning')
-        self.ctxentry = self.builder.get_object('ctxentry')
-        self.ctxwarning = self.builder.get_object('ctxwarning')
-        self.ctxwarninglabel = self.builder.get_object('ctxwarninglabel')
-        self.createbtn = self.builder.get_object('createbtn')
-        self.passentry = self.builder.get_object('passentry')
-        self.passdescription = self.builder.get_object('passdescription')
+        self.window = self.builder.get_object("impass-gui")
+        self.entry = self.builder.get_object("simplectxentry")
+        self.simplebtn = self.builder.get_object("simplebtn")
+        self.simplemenubtn = self.builder.get_object("simplemenubtn")
+        self.emitmenu = self.builder.get_object("emitmenu")
+        self.createmenu = self.builder.get_object("createmenu")
+        self.warning = self.builder.get_object("warning")
+        self.ctxentry = self.builder.get_object("ctxentry")
+        self.ctxwarning = self.builder.get_object("ctxwarning")
+        self.ctxwarninglabel = self.builder.get_object("ctxwarninglabel")
+        self.createbtn = self.builder.get_object("createbtn")
+        self.passentry = self.builder.get_object("passentry")
+        self.passdescription = self.builder.get_object("passdescription")
 
-        self.simplebox = self.builder.get_object('simplebox')
-        self.ctxbox = self.builder.get_object('ctxbox')
-        self.passbox = self.builder.get_object('passbox')
+        self.simplebox = self.builder.get_object("simplebox")
+        self.ctxbox = self.builder.get_object("ctxbox")
+        self.passbox = self.builder.get_object("passbox")
 
         if self.db.sigvalid is False:
             self.warning.show()
-        
+
         completion = Gtk.EntryCompletion()
         self.entry.set_completion(completion)
         liststore = Gtk.ListStore(GObject.TYPE_STRING)
         completion.set_model(liststore)
         completion.set_text_column(0)
-        completion.set_match_func(_match_func, 0) # 0 is column number
+        completion.set_match_func(_match_func, 0)  # 0 is column number
         context_len = 50
         for context in sorted(filter(lambda x: x == x.strip(), self.db), key=str.lower):
             if len(context) > context_len:
@@ -401,8 +407,12 @@ class Gui:
         self.entry.connect("changed", self.update_simple_context_entry)
         self.entry.connect("populate-popup", self.simple_ctx_popup)
         self.simplebtn.connect("clicked", self.simpleclicked)
-        self.builder.get_object('deletemenuitem').connect("activate", self.deleteclicked)
-        self.builder.get_object('custommenuitem').connect("activate", self.customclicked)
+        self.builder.get_object("deletemenuitem").connect(
+            "activate", self.deleteclicked
+        )
+        self.builder.get_object("custommenuitem").connect(
+            "activate", self.customclicked
+        )
         self.ctxentry.connect("changed", self.update_ctxentry)
         self.ctxentry.connect("activate", self.customcreateclicked)
         self.passentry.connect("changed", self.update_passentry)
@@ -413,20 +423,20 @@ class Gui:
 
         if query:
             self.entry.set_text(query)
-        self.set_state('Enter context for desired password:')
+        self.set_state("Enter context for desired password:")
         self.update_simple_context_entry(None)
         self.window.show()
 
     def set_state(self, state):
-        self.builder.get_object('description').set_label(state)
-        
+        self.builder.get_object("description").set_label(state)
+
     def update_simple_context_entry(self, widget):
         sctx = self.entry.get_text().strip()
 
         if sctx in self.db:
             self.simplebtn.set_label("Emit")
             self.simplemenubtn.set_popup(self.emitmenu)
-        elif sctx is None or sctx == '':
+        elif sctx is None or sctx == "":
             self.simplebtn.set_label("Create…")
             self.simplemenubtn.set_popup(None)
         else:
@@ -442,15 +452,26 @@ class Gui:
     def simple_ctx_popup(self, entry, widget, data=None):
         sctx = self.entry.get_text().strip()
         if sctx in self.db:
-            self.add_to_menu(widget, "Emit password for '"+sctx+"'", self.simpleclicked, 0)
-            self.add_to_menu(widget, "Delete password for '"+sctx+"'", self.deleteclicked, 1)
+            self.add_to_menu(
+                widget, "Emit password for '" + sctx + "'", self.simpleclicked, 0
+            )
+            self.add_to_menu(
+                widget, "Delete password for '" + sctx + "'", self.deleteclicked, 1
+            )
             pos = 2
-        elif sctx is None or sctx == '':
+        elif sctx is None or sctx == "":
             self.add_to_menu(widget, "Create custom password…", self.customclicked, 0)
             pos = 1
         else:
-            self.add_to_menu(widget, "Create and emit password for '"+sctx+"'", self.create, 0)
-            self.add_to_menu(widget, "Create custom password for '"+sctx+"'…", self.customclicked, 1)
+            self.add_to_menu(
+                widget, "Create and emit password for '" + sctx + "'", self.create, 0
+            )
+            self.add_to_menu(
+                widget,
+                "Create custom password for '" + sctx + "'…",
+                self.customclicked,
+                1,
+            )
             pos = 2
         sep = Gtk.SeparatorMenuItem()
         sep.show()
@@ -460,11 +481,11 @@ class Gui:
         sctx = self.entry.get_text().strip()
         if sctx in self.db:
             self.retrieve(None)
-        elif sctx is None or sctx == '':
+        elif sctx is None or sctx == "":
             self.customclicked(None)
         else:
             self.create(None)
-        
+
     def keypress(self, widget, event):
         if event.keyval == Gdk.KEY_Escape:
             Gtk.main_quit()
@@ -474,7 +495,9 @@ class Gui:
         if sctx in self.db:
             self.selected = self.db[sctx]
             if self.selected is None:
-                self.label.set_text("weird -- no context found even though we thought there should be one")
+                self.label.set_text(
+                    "weird -- no context found even though we thought there should be one"
+                )
             else:
                 Gtk.main_quit()
         else:
@@ -488,12 +511,14 @@ class Gui:
 
     def deleteclicked(self, widget):
         sctx = self.entry.get_text().strip()
-        confirmation = Gtk.MessageDialog(parent=self.window,
-                                         modal=True,
-                                         destroy_with_parent=True,
-                                         buttons=Gtk.ButtonsType.OK_CANCEL,
-                                         message_type=Gtk.MessageType.QUESTION,
-                                         text="Are you sure you want to delete the password for '"+sctx+"'?")
+        confirmation = Gtk.MessageDialog(
+            parent=self.window,
+            modal=True,
+            destroy_with_parent=True,
+            buttons=Gtk.ButtonsType.OK_CANCEL,
+            message_type=Gtk.MessageType.QUESTION,
+            text="Are you sure you want to delete the password for '" + sctx + "'?",
+        )
         answer = confirmation.run()
         confirmation.destroy()
         if answer == Gtk.ResponseType.OK:
@@ -513,7 +538,7 @@ class Gui:
         else:
             self.ctxentry.set_position(self.entry.get_position())
         self.ctxentry.grab_focus_without_selecting()
-        self.set_state('Create new password (with custom settings):')
+        self.set_state("Create new password (with custom settings):")
         self.refreshpass()
         self.update_ctxentry()
 
@@ -521,45 +546,63 @@ class Gui:
         sctx = self.ctxentry.get_text().strip()
         if sctx in self.db:
             self.ctxwarning.show()
-            self.ctxwarninglabel.set_text("The context '%s' already exists!"%(sctx))
+            self.ctxwarninglabel.set_text("The context '%s' already exists!" % (sctx))
             self.createbtn.set_sensitive(False)
-        elif sctx is None or sctx == '':
+        elif sctx is None or sctx == "":
             self.ctxwarning.hide()
             self.createbtn.set_sensitive(False)
         else:
             self.ctxwarning.hide()
-            self.createbtn.set_sensitive(self.passentry.get_text() != '')
+            self.createbtn.set_sensitive(self.passentry.get_text() != "")
 
     def update_passentry(self, widget=None, data=None):
         newpass = self.passentry.get_text()
         sctx = self.ctxentry.get_text().strip()
         l = len(newpass)
         # FIXME: should check (and warn) for non-ascii characters
-        lcount = len(''.join(filter(lambda x: x.islower(), newpass)))
-        ucount = len(''.join(filter(lambda x: x.isupper(), newpass)))
-        ncount = len(''.join(filter(lambda x: x.isnumeric(), newpass)))
+        lcount = len("".join(filter(lambda x: x.islower(), newpass)))
+        ucount = len("".join(filter(lambda x: x.isupper(), newpass)))
+        ncount = len("".join(filter(lambda x: x.isnumeric(), newpass)))
         ocount = l - (lcount + ucount + ncount)
-        desc = "%d characters (%d lowercase, %d uppercase, %d number, %d other)"%(l, lcount, ucount, ncount, ocount)
-        self.createbtn.set_sensitive(newpass != '' and sctx != '' and sctx not in self.db)
+        desc = "%d characters (%d lowercase, %d uppercase, %d number, %d other)" % (
+            l,
+            lcount,
+            ucount,
+            ncount,
+            ocount,
+        )
+        self.createbtn.set_sensitive(
+            newpass != "" and sctx != "" and sctx not in self.db
+        )
         self.passdescription.set_text(desc)
 
     def passentry_icon_clicked(self, widget, pos, event=None, data=None):
-        if (pos == Gtk.EntryIconPosition.PRIMARY):
+        if pos == Gtk.EntryIconPosition.PRIMARY:
             self.refreshpass()
-        elif (pos == Gtk.EntryIconPosition.SECONDARY):
+        elif pos == Gtk.EntryIconPosition.SECONDARY:
             newvis = not self.passentry.get_visibility()
             self.passentry.set_visibility(newvis)
-            self.passentry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, "hide password" if newvis else "show password")
+            self.passentry.set_icon_tooltip_text(
+                Gtk.EntryIconPosition.SECONDARY,
+                "hide password" if newvis else "show password",
+            )
 
     def passentry_popup(self, entry, widget, data=None):
         self.add_to_menu(widget, "Generate a new password", self.refreshpass, 0)
-        self.add_to_menu(widget, "Hide password" if self.passentry.get_visibility() else "Show password", lambda x: self.passentry_icon_clicked(widget, Gtk.EntryIconPosition.SECONDARY), 1)
+        self.add_to_menu(
+            widget,
+            "Hide password" if self.passentry.get_visibility() else "Show password",
+            lambda x: self.passentry_icon_clicked(
+                widget, Gtk.EntryIconPosition.SECONDARY
+            ),
+            1,
+        )
         sep = Gtk.SeparatorMenuItem()
         sep.show()
         widget.insert(sep, 2)
 
     def refreshpass(self, widget=None, event=None):
-        pwsize = os.environ.get('IMPASS_PASSWORD', DEFAULT_NEW_PASSWORD_OCTETS)
+        pwsize = os.environ.get("IMPASS_PASSWORD", DEFAULT_NEW_PASSWORD_OCTETS)
         try:
             pwsize = int(pwsize)
         except ValueError:
@@ -571,7 +614,7 @@ class Gui:
     def customcreateclicked(self, widget=None, event=None):
         newctx = self.ctxentry.get_text().strip()
         newpass = self.passentry.get_text()
-        if newpass == '' or newctx == '' or newctx in self.db:
+        if newpass == "" or newctx == "" or newctx in self.db:
             # this button is not supposed to work under these conditions
             return
         self.selected = self.db.add(newctx, password=newpass)

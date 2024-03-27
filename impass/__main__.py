@@ -14,19 +14,18 @@ import collections
 from .db import Database, DatabaseError, DEFAULT_NEW_PASSWORD_OCTETS
 from .version import __version__
 
-PROG = 'impass'
+PROG = "impass"
 
 ############################################################
 
-IMPASS_DIR = os.path.join(os.path.expanduser('~'),'.impass')
+IMPASS_DIR = os.path.join(os.path.expanduser("~"), ".impass")
 
 ############################################################
+
 
 def xclip(text):
-    p = subprocess.Popen(' '.join(["xclip", "-i"]),
-                         shell=True,
-                         stdin=subprocess.PIPE)
-    p.communicate(text.encode('utf-8'))
+    p = subprocess.Popen(" ".join(["xclip", "-i"]), shell=True, stdin=subprocess.PIPE)
+    p.communicate(text.encode("utf-8"))
 
 
 def log(*args):
@@ -41,18 +40,21 @@ def log(*args):
 # 10 db error
 # 20 gpg/key error
 ############################################################
-def error(code, msg=''):
+def error(code, msg=""):
     if msg:
         log(msg)
     sys.exit(code)
 
 
 def open_db(keyid=None, create=False):
-    DBPATH = os.getenv('IMPASS_DB', os.path.join(IMPASS_DIR, 'db'))
+    DBPATH = os.getenv("IMPASS_DB", os.path.join(IMPASS_DIR, "db"))
     if not create and not os.path.exists(DBPATH):
-        error(5, """Impass database does not exist.
+        error(
+            5,
+            """Impass database does not exist.
 To add an entry to the database use 'impass add'.
-See 'impass help' for more information.""")
+See 'impass help' for more information.""",
+        )
     try:
         db = Database(DBPATH, keyid)
     except gpg.errors.GPGMEError as e:
@@ -65,11 +67,11 @@ See 'impass help' for more information.""")
 
 
 def get_keyid():
-    keyid = os.getenv('IMPASS_KEYID')
-    keyfile = os.getenv('IMPASS_KEYFILE', os.path.join(IMPASS_DIR, 'keyid'))
+    keyid = os.getenv("IMPASS_KEYID")
+    keyfile = os.getenv("IMPASS_KEYFILE", os.path.join(IMPASS_DIR, "keyid"))
 
     if not keyid and os.path.exists(keyfile):
-        with open(keyfile, 'r') as f:
+        with open(keyfile, "r") as f:
             keyid = f.read().strip()
 
     save = False
@@ -77,8 +79,8 @@ def get_keyid():
         log("OpenPGP key ID of encryption target not specified.")
         log("Please provide key ID in IMPASS_KEYID environment variable,")
         log("or specify key ID now to save in ~/.impass/keyid file.")
-        keyid = input('OpenPGP key ID: ')
-        if keyid == '':
+        keyid = input("OpenPGP key ID: ")
+        if keyid == "":
             keyid = None
         else:
             save = True
@@ -97,7 +99,7 @@ def get_keyid():
     if save:
         if not os.path.isdir(os.path.dirname(keyfile)):
             os.mkdir(os.path.dirname(keyfile))
-        with open(keyfile, 'w') as f:
+        with open(keyfile, "w") as f:
             f.write(keyid)
 
     return keyid
@@ -106,10 +108,9 @@ def get_keyid():
 class Completer:
     def __init__(self, completions=None):
         self.completions = completions or []
+
     def completer(self, text, index):
-        matching = [
-            c for c in self.completions if c.startswith(text)
-            ]
+        matching = [c for c in self.completions if c.startswith(text)]
         try:
             return matching[index]
         except IndexError:
@@ -120,6 +121,7 @@ def input_complete(prompt, completions=None, default=None):
     try:
         # lifted from magic-wormhole/codes.py
         import readline
+
         c = Completer(completions)
         readline.set_startup_hook()
         if "libedit" in readline.__doc__:
@@ -127,7 +129,7 @@ def input_complete(prompt, completions=None, default=None):
         else:
             readline.parse_and_bind("tab: complete")
         readline.set_completer(c.completer)
-        readline.set_completer_delims(' ')
+        readline.set_completer_delims(" ")
         if default:
             readline.set_startup_hook(lambda: readline.insert_text(default))
     except ImportError:
@@ -138,12 +140,14 @@ def input_complete(prompt, completions=None, default=None):
         error(-1)
 
 
-def retrieve_context(arg, prompt='context: ', default=None, stdin=True, db=None):
-    if arg == '-' and stdin:
+def retrieve_context(arg, prompt="context: ", default=None, stdin=True, db=None):
+    if arg == "-" and stdin:
         context = sys.stdin.read()
-    elif arg in [':', None]:
+    elif arg in [":", None]:
         if db:
-            context = input_complete(prompt, completions=[c for c in db], default=default)
+            context = input_complete(
+                prompt, completions=[c for c in db], default=default
+            )
         else:
             context = input_complete(prompt, default=default)
     else:
@@ -153,17 +157,20 @@ def retrieve_context(arg, prompt='context: ', default=None, stdin=True, db=None)
 
 class PasswordAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-        if not os.getenv('IMPASS_PASSWORD'):
+        if not os.getenv("IMPASS_PASSWORD"):
             password = None
-        elif os.getenv('IMPASS_PASSWORD') in ['prompt',':']:
-            password = ':'
+        elif os.getenv("IMPASS_PASSWORD") in ["prompt", ":"]:
+            password = ":"
         else:
             try:
-                password = int(os.getenv('IMPASS_PASSWORD'))
+                password = int(os.getenv("IMPASS_PASSWORD"))
             except ValueError:
-                error(1, "IMPASS_PASSWORD environment variable is neither int nor 'prompt'.")
-        if values == ':':
-            password = ':'
+                error(
+                    1,
+                    "IMPASS_PASSWORD environment variable is neither int nor 'prompt'.",
+                )
+        if values == ":":
+            password = ":"
         elif values:
             try:
                 password = int(values)
@@ -173,7 +180,7 @@ class PasswordAction(argparse.Action):
 
 
 def retrieve_password(pwspec):
-    if pwspec == ':':
+    if pwspec == ":":
         return input_password()
     else:
         log("Auto-generating password...")
@@ -182,16 +189,18 @@ def retrieve_password(pwspec):
 
 def input_password():
     try:
-        password0 = getpass.getpass('password: ')
-        password1 = getpass.getpass('reenter password: ')
+        password0 = getpass.getpass("password: ")
+        password1 = getpass.getpass("reenter password: ")
         if password0 != password1:
             error(2, "Passwords do not match.  Aborting.")
         return password0
     except KeyboardInterrupt:
         error(-1)
 
+
 ############################################################
 # command functions
+
 
 def add(args):
     """Add new entry.
@@ -200,13 +209,20 @@ def add(args):
     thrown.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' add',
-                                     description=add.__doc__)
-    parser.add_argument('context', nargs='?',
-                        help="existing database context, ':' for prompt, or '-' for stdin")
-    parser.add_argument('pwspec', nargs='?', action=PasswordAction,
-                        help="password spec: N octets or ':' for prompt")
-    if args is None: return parser
+    parser = argparse.ArgumentParser(prog=PROG + " add", description=add.__doc__)
+    parser.add_argument(
+        "context",
+        nargs="?",
+        help="existing database context, ':' for prompt, or '-' for stdin",
+    )
+    parser.add_argument(
+        "pwspec",
+        nargs="?",
+        action=PasswordAction,
+        help="password spec: N octets or ':' for prompt",
+    )
+    if args is None:
+        return parser
     args = parser.parse_args(args)
 
     keyid = get_keyid()
@@ -233,13 +249,22 @@ def replace(args):
     will be thrown.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' replace',
-                                     description=replace.__doc__)
-    parser.add_argument('context', nargs='?',
-                        help="existing database context, ':' for prompt, or '-' for stdin")
-    parser.add_argument('pwspec', nargs='?', action=PasswordAction,
-                        help="password spec: N octets or ':' for prompt")
-    if args is None: return parser
+    parser = argparse.ArgumentParser(
+        prog=PROG + " replace", description=replace.__doc__
+    )
+    parser.add_argument(
+        "context",
+        nargs="?",
+        help="existing database context, ':' for prompt, or '-' for stdin",
+    )
+    parser.add_argument(
+        "pwspec",
+        nargs="?",
+        action=PasswordAction,
+        help="password spec: N octets or ':' for prompt",
+    )
+    if args is None:
+        return parser
     args = parser.parse_args(args)
 
     keyid = get_keyid()
@@ -266,23 +291,29 @@ def update(args):
     context.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' update',
-                                     description=update.__doc__)
-    parser.add_argument('old_context', nargs='?',
-                        help="existing database context, ':' for prompt, or '-' for stdin")
-    parser.add_argument('new_context', nargs='?',
-                        help="new database context or ':' for prompt")
-    if args is None: return parser
+    parser = argparse.ArgumentParser(prog=PROG + " update", description=update.__doc__)
+    parser.add_argument(
+        "old_context",
+        nargs="?",
+        help="existing database context, ':' for prompt, or '-' for stdin",
+    )
+    parser.add_argument(
+        "new_context", nargs="?", help="new database context or ':' for prompt"
+    )
+    if args is None:
+        return parser
     args = parser.parse_args(args)
 
     keyid = get_keyid()
     db = open_db(keyid)
 
-    old_context = retrieve_context(args.old_context, prompt='old context: ', db=db)
+    old_context = retrieve_context(args.old_context, prompt="old context: ", db=db)
     if old_context not in db:
         error(2, "Context '{}' not found".format(old_context))
 
-    new_context = retrieve_context(args.new_context, prompt='new context: ', default=old_context, stdin=False)
+    new_context = retrieve_context(
+        args.new_context, prompt="new context: ", default=old_context, stdin=False
+    )
     if new_context in db:
         error(2, "Context '{}' already exists.".format(new_context))
 
@@ -303,11 +334,10 @@ def dump(args):
     set.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' dump',
-                                     description=dump.__doc__)
-    parser.add_argument('string', nargs='?',
-                        help="substring match for contexts")
-    if args is None: return parser
+    parser = argparse.ArgumentParser(prog=PROG + " dump", description=dump.__doc__)
+    parser.add_argument("string", nargs="?", help="substring match for contexts")
+    if args is None:
+        return parser
     args = parser.parse_args(args)
     keyid = get_keyid()
     db = open_db(keyid)
@@ -315,13 +345,13 @@ def dump(args):
     output = {}
     for context in results:
         output[context] = {}
-        output[context]['date'] = results[context]['date']
-        if os.getenv('IMPASS_DUMP_PASSWORDS'):
-            output[context]['password'] = results[context]['password']
+        output[context]["date"] = results[context]["date"]
+        if os.getenv("IMPASS_DUMP_PASSWORDS"):
+            output[context]["password"] = results[context]["password"]
     print(json.dumps(output, sort_keys=True, indent=2))
 
 
-def gui(args, method=os.getenv('IMPASS_XPASTE', 'xdo')):
+def gui(args, method=os.getenv("IMPASS_XPASTE", "xdo")):
     """Launch minimal X GUI.
 
     Good for X11 window manager integration. Upon invocation the user
@@ -338,24 +368,27 @@ def gui(args, method=os.getenv('IMPASS_XPASTE', 'xdo')):
     accessible through the GUI.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' gui',
-                                     description=gui.__doc__)
-    parser.add_argument('string', nargs='?',
-                        help="substring match for contexts")
-    if args is None: return parser
+    parser = argparse.ArgumentParser(prog=PROG + " gui", description=gui.__doc__)
+    parser.add_argument("string", nargs="?", help="substring match for contexts")
+    if args is None:
+        return parser
     args = parser.parse_args(args)
     from .gui import Gui
-    if method == 'xdo':
+
+    if method == "xdo":
         try:
             import xdo  # type: ignore
         except ModuleNotFoundError:
-            error(1, """The xdo module is not found, so the 'xdo' paste method is not available.
-Please install python3-xdo.""")
+            error(
+                1,
+                """The xdo module is not found, so the 'xdo' paste method is not available.
+Please install python3-xdo.""",
+            )
         # initialize xdo
         x = xdo.xdo()
         # get the id of the currently focused window
         win = x.get_focused_window()
-    elif method == 'xclip':
+    elif method == "xclip":
         pass
     else:
         error(1, "Unknown X paste method '{}'.".format(method))
@@ -364,12 +397,13 @@ Please install python3-xdo.""")
     result = Gui(db, query=args.string).returnValue()
     # type the password in the saved window
     if result:
-        if method == 'xdo':
+        if method == "xdo":
             x.focus_window(win)
             x.wait_for_window_focus(win)
-            x.type(result['password'])
-        elif method == 'xclip':
-            xclip(result['password'])
+            x.type(result["password"])
+        elif method == "xclip":
+            xclip(result["password"])
+
 
 def remove(args):
     """Remove entry.
@@ -378,11 +412,14 @@ def remove(args):
     will be thrown.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' remove',
-                                     description=remove.__doc__)
-    parser.add_argument('context', nargs='?',
-                        help="existing database context, ':' for prompt, or '-' for stdin")
-    if args is None: return parser
+    parser = argparse.ArgumentParser(prog=PROG + " remove", description=remove.__doc__)
+    parser.add_argument(
+        "context",
+        nargs="?",
+        help="existing database context, ':' for prompt, or '-' for stdin",
+    )
+    if args is None:
+        return parser
     args = parser.parse_args(args)
 
     keyid = get_keyid()
@@ -397,7 +434,7 @@ def remove(args):
         response = input("Type 'yes' to remove: ")
     except KeyboardInterrupt:
         error(-1)
-    if response != 'yes':
+    if response != "yes":
         error(-1)
 
     try:
@@ -410,38 +447,45 @@ def remove(args):
 
 def print_help(args):
     """Full usage or command help (also '-h' after command)."""
-    parser = argparse.ArgumentParser(prog=PROG+' help',
-                                     description=print_help.__doc__)
-    if args is None: return parser
+    parser = argparse.ArgumentParser(
+        prog=PROG + " help", description=print_help.__doc__
+    )
+    if args is None:
+        return parser
     # if no argument is provided print the full man page
     try:
-        cmd  = args[0]
+        cmd = args[0]
     except IndexError:
         print_manpage()
         return
     # otherwise assume the first argument is a command and print it's
     # help
     func = get_func(cmd)
-    func(['-h'])
+    func(["-h"])
 
 
 def version(args):
     """Print version."""
-    parser = argparse.ArgumentParser(prog=PROG+' version',
-                                     description=version.__doc__)
-    if args is None: return parser
+    parser = argparse.ArgumentParser(
+        prog=PROG + " version", description=version.__doc__
+    )
+    if args is None:
+        return parser
     print(__version__)
+
 
 ############################################################
 # main
 
 synopsis = """{prog} <command> [<args>...]""".format(prog=PROG)
 
+
 # NOTE: double spaces are interpreted by text2man to be paragraph
 # breaks.  NO DOUBLE SPACES.  Also two spaces at the end of a line
 # indicate an element in a tag list.
 def print_manpage():
-    print("""
+    print(
+        """
 NAME
   {prog} - Simple and secure password management and retrieval system
 
@@ -507,28 +551,33 @@ ENVIRONMENT
 AUTHOR
     Jameson Graef Rollins <jrollins@finestructure.net>
     Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-""".format(prog=PROG,
-           synopsis=synopsis,
-           cmds=format_commands(man=True),
-           octets=DEFAULT_NEW_PASSWORD_OCTETS).strip())
+""".format(
+            prog=PROG,
+            synopsis=synopsis,
+            cmds=format_commands(man=True),
+            octets=DEFAULT_NEW_PASSWORD_OCTETS,
+        ).strip()
+    )
 
 
 def format_commands(man=False):
-    prefix = ' '*8
+    prefix = " " * 8
     wrapper = textwrap.TextWrapper(
         width=70,
         initial_indent=prefix,
         subsequent_indent=prefix,
-        )
+    )
     with io.StringIO("some initial text data") as f:
         for name, func in CMDS.items():
             if man:
                 parser = func(None)
-                usage = parser.format_usage()[len('usage: impass '):].strip()
-                desc = wrapper.fill('\n'.join([l.strip() for l in parser.description.splitlines() if l]))
+                usage = parser.format_usage()[len("usage: impass ") :].strip()
+                desc = wrapper.fill(
+                    "\n".join([l.strip() for l in parser.description.splitlines() if l])
+                )
                 f.write("  {}  \n".format(usage))
-                f.write(desc+'\n')
-                f.write('\n')
+                f.write(desc + "\n")
+                f.write("\n")
             else:
                 desc = func.__doc__.splitlines()[0]
                 f.write("  {:15}{}\n".format(name, desc))
@@ -536,21 +585,23 @@ def format_commands(man=False):
     return output.rstrip()
 
 
-CMDS = collections.OrderedDict([
-    ('add', add),
-    ('replace', replace),
-    ('update', update),
-    ('dump', dump),
-    ('gui', gui),
-    ('remove', remove),
-    ('help', print_help),
-    ('version', version),
-    ])
+CMDS = collections.OrderedDict(
+    [
+        ("add", add),
+        ("replace", replace),
+        ("update", update),
+        ("dump", dump),
+        ("gui", gui),
+        ("remove", remove),
+        ("help", print_help),
+        ("version", version),
+    ]
+)
 ALIAS = {
-    '--version': 'version',
-    '--help': 'help',
-    '-h': 'help',
-    }
+    "--version": "version",
+    "--help": "help",
+    "-h": "help",
+}
 
 
 def get_func(cmd):
@@ -578,25 +629,31 @@ def main():
     func = get_func(cmd)
 
     ### DEPRECATE: this is for the assword->impass transition
-    if os.path.basename(sys.argv[0]) == 'assword':
-        log("""WARNING: assword has been renamed "impass".  Please update your invocations.""")
+    if os.path.basename(sys.argv[0]) == "assword":
+        log(
+            """WARNING: assword has been renamed "impass".  Please update your invocations."""
+        )
     vfound = []
-    for var in ['DB', 'KEYFILE', 'KEYID', 'PASSWORD', 'DUMP_PASSWORDS', 'XPASTE']:
-        val = os.getenv('ASSWORD_'+var)
+    for var in ["DB", "KEYFILE", "KEYID", "PASSWORD", "DUMP_PASSWORDS", "XPASTE"]:
+        val = os.getenv("ASSWORD_" + var)
         if val:
             vfound.append(var)
-            if not os.getenv('IMPASS_'+var):
-                os.environ['IMPASS_'+var] = val
+            if not os.getenv("IMPASS_" + var):
+                os.environ["IMPASS_" + var] = val
     if vfound:
-        log("""WARNING: assword has been renamed "impass".  Please update your environment variables:""")
+        log(
+            """WARNING: assword has been renamed "impass".  Please update your environment variables:"""
+        )
         for var in vfound:
             log("  ASSWORD_{var} -> IMPASS_{var}".format(var=var))
-    assword_dir = os.path.join(os.path.expanduser('~'),'.assword')
-    if os.path.exists(assword_dir) and \
-       (not os.path.islink(assword_dir)) and \
-       os.path.isdir(assword_dir) and \
-       (not os.getenv('IMPASS_DB')) and \
-       cmd not in ['help', 'version', '-h', '--help', '--version']:
+    assword_dir = os.path.join(os.path.expanduser("~"), ".assword")
+    if (
+        os.path.exists(assword_dir)
+        and (not os.path.islink(assword_dir))
+        and os.path.isdir(assword_dir)
+        and (not os.getenv("IMPASS_DB"))
+        and cmd not in ["help", "version", "-h", "--help", "--version"]
+    ):
         try:
             os.rename(assword_dir, IMPASS_DIR)
             linkok = False
@@ -607,9 +664,14 @@ def main():
                 pass
             print("renamed ~/.assword -> ~/.impass", file=sys.stderr)
             if not linkok:
-                print("(tried to symlink ~/.assword to ~/.impass as well, but symlinking failed)", file=sys.stderr)
+                print(
+                    "(tried to symlink ~/.assword to ~/.impass as well, but symlinking failed)",
+                    file=sys.stderr,
+                )
         except:
-            sys.exit("Could not rename old assword directory ~/.assword -> ~/.impass.\nPlease check ~/.impass path.")
+            sys.exit(
+                "Could not rename old assword directory ~/.assword -> ~/.impass.\nPlease check ~/.impass path."
+            )
         os.symlink(IMPASS_DIR, assword_dir)
         log("renamed ~/.assword -> ~/.impass")
     ### DEPRECATE
