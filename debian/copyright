@@ -4,7 +4,8 @@ Upstream-Contact: Jameson Rollins <jrollins@finestructure.net>
 Source: https://salsa.debian.org/debian/impass
 
 Files: *
-Copyright: 2012-2013, Jameson Rollins <jrollins@finestructure.net>
+Copyright: 2012-2024, Jameson Rollins <jrollins@finestructure.net>,
+  Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 License: GPL-3+
 
 License: GPL-3+
