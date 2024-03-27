@@ -5,7 +5,7 @@ Maintainer: Jameson Graef Rollins <jrollins@finestructure.net>
 Uploaders:
  Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
 Build-Depends:
- debhelper-compat (= 12),
+ debhelper-compat (= 13),
  dh-python,
  pkg-config,
  python3,
