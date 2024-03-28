@@ -3,7 +3,7 @@
 # much of the structure here was cribbed from
 # https://github.com/pypa/sampleproject
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 # To use a consistent encoding
 from codecs import open
