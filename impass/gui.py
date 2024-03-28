@@ -1,19 +1,21 @@
 import os
 import gi  # type: ignore
 
+from typing import Any, Optional, Dict, Callable
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # type: ignore
 from gi.repository import GObject
 from gi.repository import Gdk
 
-from .db import pwgen, DEFAULT_NEW_PASSWORD_OCTETS
+from .db import pwgen, DEFAULT_NEW_PASSWORD_OCTETS, Database
 
 ############################################################
 
 
 # Assumes that the func_data is set to the number of the text column in the
 # model.
-def _match_func(completion, key, iter, column):
+def _match_func(completion: Any, key: str, iter: int, column: str) -> bool:
     model = completion.get_model()
     text = model[iter][column]
     if text.lower().find(key.lower()) > -1:
@@ -324,7 +326,7 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
 class Gui:
     """Impass X-based query UI."""
 
-    def __init__(self, db, query=None):
+    def __init__(self, db: Database, query: Optional[str] = None) -> None:
         """
         +--------------------- warning --------------------+
         |                    notification                  |
@@ -347,10 +349,10 @@ class Gui:
         self.db = db
         self.query = None
         self.results = None
-        self.selected = None
-        self.window = None
-        self.entry = None
-        self.label = None
+        self.selected: Optional[Dict[str, str]] = None
+        self.window: Optional[Gtk.Widget] = None
+        self.entry: Optional[Gtk.Widget] = None
+        self.label: Optional[Gtk.Widget] = None
         if query is not None:
             query = query.strip()
 
@@ -368,7 +370,9 @@ class Gui:
                 self.selected = r[list(r.keys())[0]]
                 return
 
-        self.builder = Gtk.Builder.new_from_string(_gui_layout, len(_gui_layout))
+        self.builder: Gtk.Builder = Gtk.Builder.new_from_string(
+            _gui_layout, len(_gui_layout)
+        )
         self.window = self.builder.get_object("impass-gui")
         self.entry = self.builder.get_object("simplectxentry")
         self.simplebtn = self.builder.get_object("simplebtn")
@@ -427,10 +431,12 @@ class Gui:
         self.update_simple_context_entry(None)
         self.window.show()
 
-    def set_state(self, state):
+    def set_state(self, state: str) -> None:
         self.builder.get_object("description").set_label(state)
 
-    def update_simple_context_entry(self, widget):
+    def update_simple_context_entry(self, widget: Optional[Gtk.Widget]) -> None:
+        if self.entry is None:
+            raise Exception("Gui is not initialized")
         sctx = self.entry.get_text().strip()
 
         if sctx in self.db:
@@ -443,13 +449,23 @@ class Gui:
             self.simplebtn.set_label("Create")
             self.simplemenubtn.set_popup(self.createmenu)
 
-    def add_to_menu(self, menu, name, onclicked, position):
+    def add_to_menu(
+        self,
+        menu: Gtk.Widget,
+        name: str,
+        onclicked: Callable[[Gui], None],
+        position: int,
+    ) -> None:
         x = Gtk.MenuItem(label=name)
         x.connect("activate", onclicked)
         x.show()
         menu.insert(x, position)
 
-    def simple_ctx_popup(self, entry, widget, data=None):
+    def simple_ctx_popup(
+        self, entry: Gtk.Widget, widget: Gtk.Widget, data: Optional[Any] = None
+    ) -> None:
+        if self.entry is None:
+            raise Exception("Gui is not initialized")
         sctx = self.entry.get_text().strip()
         if sctx in self.db:
             self.add_to_menu(
@@ -477,7 +493,9 @@ class Gui:
         sep.show()
         widget.insert(sep, pos)
 
-    def simpleclicked(self, widget):
+    def simpleclicked(self, widget: Gtk.Widget) -> None:
+        if self.entry is None:
+            raise Exception("Gui is not initialized")
         sctx = self.entry.get_text().strip()
         if sctx in self.db:
             self.retrieve(None)
@@ -486,11 +504,13 @@ class Gui:
         else:
             self.create(None)
 
-    def keypress(self, widget, event):
+    def keypress(self, widget: Gtk.Widget, event: Gdk.EventKey) -> None:
         if event.keyval == Gdk.KEY_Escape:
             Gtk.main_quit()
 
-    def retrieve(self, widget, data=None):
+    def retrieve(self, widget: Gtk.Widget, data: Optional[Any] = None) -> None:
+        if self.entry is None or self.label is None:
+            raise Exception("Gui is not initialized")
         sctx = self.entry.get_text().strip()
         if sctx in self.db:
             self.selected = self.db[sctx]
@@ -503,13 +523,17 @@ class Gui:
         else:
             self.label.set_text("no match")
 
-    def create(self, widget, data=None):
+    def create(self, widget: Gtk.Widget, data: Optional[Any] = None) -> None:
+        if self.entry is None:
+            raise Exception("Gui is not initialized")
         sctx = self.entry.get_text().strip()
         self.selected = self.db.add(sctx)
         self.db.save()
         Gtk.main_quit()
 
-    def deleteclicked(self, widget):
+    def deleteclicked(self, widget: Gtk.Widget) -> None:
+        if self.entry is None:
+            raise Exception("Gui is not initialized")
         sctx = self.entry.get_text().strip()
         confirmation = Gtk.MessageDialog(
             parent=self.window,
@@ -527,7 +551,9 @@ class Gui:
             self.db.save()
             Gtk.main_quit()
 
-    def customclicked(self, widget):
+    def customclicked(self, widget: Gtk.Widget) -> None:
+        if self.ctxentry is None or self.entry is None:
+            raise Exception("Gui is not initialized")
         self.simplebox.hide()
         self.ctxbox.show()
         self.passbox.show()
@@ -542,7 +568,9 @@ class Gui:
         self.refreshpass()
         self.update_ctxentry()
 
-    def update_ctxentry(self, widget=None, data=None):
+    def update_ctxentry(
+        self, widget: Optional[Gtk.Widget] = None, data: Optional[Any] = None
+    ) -> None:
         sctx = self.ctxentry.get_text().strip()
         if sctx in self.db:
             self.ctxwarning.show()
@@ -555,7 +583,9 @@ class Gui:
             self.ctxwarning.hide()
             self.createbtn.set_sensitive(self.passentry.get_text() != "")
 
-    def update_passentry(self, widget=None, data=None):
+    def update_passentry(
+        self, widget: Optional[Gtk.Widget] = None, data: Optional[Any] = None
+    ) -> None:
         newpass = self.passentry.get_text()
         sctx = self.ctxentry.get_text().strip()
         l = len(newpass)
@@ -576,7 +606,13 @@ class Gui:
         )
         self.passdescription.set_text(desc)
 
-    def passentry_icon_clicked(self, widget, pos, event=None, data=None):
+    def passentry_icon_clicked(
+        self,
+        widget: Gtk.Widget,
+        pos: Gtk.EntryIconPosition,
+        event: Optional[Gdk.Event] = None,
+        data: Optional[Any] = None,
+    ) -> None:
         if pos == Gtk.EntryIconPosition.PRIMARY:
             self.refreshpass()
         elif pos == Gtk.EntryIconPosition.SECONDARY:
@@ -587,7 +623,9 @@ class Gui:
                 "hide password" if newvis else "show password",
             )
 
-    def passentry_popup(self, entry, widget, data=None):
+    def passentry_popup(
+        self, entry: Gtk.Entry, widget: Gtk.Widget, data: Optional[Any] = None
+    ) -> None:
         self.add_to_menu(widget, "Generate a new password", self.refreshpass, 0)
         self.add_to_menu(
             widget,
@@ -601,7 +639,9 @@ class Gui:
         sep.show()
         widget.insert(sep, 2)
 
-    def refreshpass(self, widget=None, event=None):
+    def refreshpass(
+        self, widget: Optional[Gtk.Widget] = None, event: Optional[Gdk.Event] = None
+    ) -> None:
         pwsize = os.environ.get("IMPASS_PASSWORD", DEFAULT_NEW_PASSWORD_OCTETS)
         try:
             pwsize = int(pwsize)
@@ -611,7 +651,9 @@ class Gui:
         self.passentry.set_text(newpw)
         # FIXME: should refocus self.passentry?
 
-    def customcreateclicked(self, widget=None, event=None):
+    def customcreateclicked(
+        self, widget: Optional[Gtk.Widget] = None, event: Optional[Gdk.Event] = None
+    ) -> None:
         newctx = self.ctxentry.get_text().strip()
         newpass = self.passentry.get_text()
         if newpass == "" or newctx == "" or newctx in self.db:
@@ -621,10 +663,10 @@ class Gui:
         self.db.save()
         Gtk.main_quit()
 
-    def destroy(self, widget, data=None):
+    def destroy(self, widget: Gtk.Widget, data: Optional[Any] = None) -> None:
         Gtk.main_quit()
 
-    def returnValue(self):
+    def returnValue(self) -> Optional[Dict[str, str]]:
         if self.selected is None:
             Gtk.main()
         return self.selected
