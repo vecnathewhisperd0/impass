@@ -677,7 +677,7 @@ class Gui:
     def destroy(self, widget: Gtk.Widget, data: Optional[Any] = None) -> None:
         Gtk.main_quit()
 
-    def returnValue(self) -> Optional[Dict[str, str]]:
+    def return_value(self) -> Optional[Dict[str, str]]:
         if self.selected is None:
             Gtk.main()
         return self.selected

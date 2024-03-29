@@ -420,7 +420,7 @@ def gui(
         error(1, "Unknown X paste method '{}'.".format(method))
     keyid = get_keyid()
     db = open_db(keyid)
-    result = Gui(db, query=argsns.string).returnValue()
+    result = Gui(db, query=argsns.string).return_value()
     # type the password in the saved window
     if result:
         if method == "xdo":
