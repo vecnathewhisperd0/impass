@@ -49,8 +49,8 @@ def error(code: int, msg: str = "") -> NoReturn:
 
 
 def open_db(keyid: Optional[str] = None, create: bool = False) -> Database:
-    DBPATH = os.getenv("IMPASS_DB", os.path.join(IMPASS_DIR, "db"))
-    if not create and not os.path.exists(DBPATH):
+    db_path = os.getenv("IMPASS_DB", os.path.join(IMPASS_DIR, "db"))
+    if not create and not os.path.exists(db_path):
         error(
             5,
             """Impass database does not exist.
@@ -58,7 +58,7 @@ To add an entry to the database use 'impass add'.
 See 'impass help' for more information.""",
         )
     try:
-        db = Database(DBPATH, keyid)
+        db = Database(db_path, keyid)
     except gpg.errors.GPGMEError as e:
         error(20, "Decryption error: {}".format(e))
     except DatabaseError as e:
@@ -407,8 +407,8 @@ def gui(
         except ModuleNotFoundError:
             error(
                 1,
-                """The xdo module is not found, so the 'xdo' paste method is not available.
-Please install python3-xdo.""",
+                """The xdo module is not found, so 'xdo' pasting is not available.
+                Please install python3-xdo.""",
             )
         # initialize xdo
         x = xdo.xdo()
@@ -581,7 +581,7 @@ ENVIRONMENT
 AUTHOR
     Jameson Graef Rollins <jrollins@finestructure.net>
     Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-""".strip()
+""".strip()  # noqa: W291 (trailing whitespace)
     )
 
 
@@ -598,15 +598,16 @@ def format_commands(man: bool = False) -> str:
                 parser = func(None)
                 if parser is None:
                     raise Exception(
-                        f"{name} yielded function {func} that did not return a parser (internal error)"
+                        f"{name} yielded function {func} that did"
+                        "not return a parser (internal error)"
                     )
-                usage = parser.format_usage()[len("usage: impass ") :].strip()
+                usage = parser.format_usage()[len("usage: impass "):].strip()
                 if parser.description is None:
                     desc = ""
                 else:
                     desc = wrapper.fill(
                         "\n".join(
-                            [l.strip() for l in parser.description.splitlines() if l]
+                            [ln.strip() for ln in parser.description.splitlines() if ln]
                         )
                     )
                 f.write("  {}  \n".format(usage))
@@ -665,11 +666,9 @@ def main() -> None:
     args = sys.argv[2:]
     func = get_func(cmd)
 
-    ### DEPRECATE: this is for the assword->impass transition
+    # DEPRECATE: this is for the assword->impass transition
     if os.path.basename(sys.argv[0]) == "assword":
-        log(
-            """WARNING: assword has been renamed "impass".  Please update your invocations."""
-        )
+        log("WARNING: assword has been renamed impass. Please update your invocations.")
     vfound = []
     for var in ["DB", "KEYFILE", "KEYID", "PASSWORD", "DUMP_PASSWORDS", "XPASTE"]:
         val = os.getenv("ASSWORD_" + var)
@@ -679,7 +678,8 @@ def main() -> None:
                 os.environ["IMPASS_" + var] = val
     if vfound:
         log(
-            """WARNING: assword has been renamed "impass".  Please update your environment variables:"""
+            """WARNING: assword has been renamed impass.
+        Please update your environment variables:"""
         )
         for var in vfound:
             log("  ASSWORD_{var} -> IMPASS_{var}".format(var=var))
@@ -693,25 +693,25 @@ def main() -> None:
     ):
         try:
             os.rename(assword_dir, IMPASS_DIR)
-            linkok = False
+            linkerr: Optional[str] = None
             try:
                 os.symlink(IMPASS_DIR, assword_dir)
-                linkok = True
-            except:
+            except Exception as e:
+                linkerr = str(e)
                 pass
             print("renamed ~/.assword -> ~/.impass", file=sys.stderr)
-            if not linkok:
-                print(
-                    "(tried to symlink ~/.assword to ~/.impass as well, but symlinking failed)",
-                    file=sys.stderr,
-                )
-        except:
+            if linkerr is not None:
+                linkerr = f"(failed symlinking ~/.assword to ~/.impass ({linkerr}))"
+                print(linkerr, file=sys.stderr)
+        except Exception as e:
             sys.exit(
-                "Could not rename old assword directory ~/.assword -> ~/.impass.\nPlease check ~/.impass path."
+                f"""Could not rename old assword directory ~/.assword -> ~/.impass.
+            Error: {e}
+            Please check ~/.impass path."""
             )
         os.symlink(IMPASS_DIR, assword_dir)
         log("renamed ~/.assword -> ~/.impass")
-    ### DEPRECATE
+    # DEPRECATE
 
     cmd = sys.argv[1]
     args = sys.argv[2:]

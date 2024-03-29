@@ -1,14 +1,17 @@
+from __future__ import annotations
+
 import os
 import gi  # type: ignore
 
 from typing import Any, Optional, Dict, Callable
 
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk  # type: ignore
-from gi.repository import GObject
-from gi.repository import Gdk
-
 from .db import pwgen, DEFAULT_NEW_PASSWORD_OCTETS, Database
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # type: ignore # noqa: E402
+from gi.repository import GObject  # noqa: E402
+from gi.repository import Gdk  # noqa: E402
+
 
 ############################################################
 
@@ -73,7 +76,8 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
               <object class="GtkLabel" id="notification">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">WARNING: could not validate signature on db file!</property>
+                <property name="label" translatable="yes"
+>WARNING: could not validate signature on db file!</property>
                 <attributes>
                   <attribute name="foreground" value="#cccc00000000"/>
                 </attributes>
@@ -123,7 +127,8 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="width_chars">50</property>
-                <property name="placeholder_text" translatable="yes">Enter context…</property>
+                <property name="placeholder_text" translatable="yes"
+>Enter context…</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -187,7 +192,8 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
                   <object class="GtkEntry" id="ctxentry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="placeholder_text" translatable="yes">Enter context…</property>
+                    <property name="placeholder_text"translatable="yes"
+>Enter context…</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -203,7 +209,8 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
                       <object class="GtkLabel" id="ctxwarninglabel">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">This context already exists!</property>
+                        <property name="label" translatable="yes"
+>This context already exists!</property>
                         <attributes>
                           <attribute name="style" value="italic"/>
                           <attribute name="foreground" value="#cccc00000000"/>
@@ -263,9 +270,12 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
                     <property name="can_focus">True</property>
                     <property name="primary_icon_stock">gtk-refresh</property>
                     <property name="secondary_icon_stock">gtk-find</property>
-                    <property name="primary_icon_tooltip_text" translatable="yes">generate a new password</property>
-                    <property name="secondary_icon_tooltip_text" translatable="yes">show password</property>
-                    <property name="placeholder_text" translatable="yes">You must enter a password!</property>
+                    <property name="primary_icon_tooltip_text" translatable="yes"
+>generate a new password</property>
+                    <property name="secondary_icon_tooltip_text" translatable="yes"
+>show password</property>
+                    <property name="placeholder_text" translatable="yes"
+>You must enter a password!</property>
                     <property name="input_purpose">password</property>
                   </object>
                   <packing>
@@ -278,7 +288,8 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
                   <object class="GtkLabel" id="passdescription">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">%d characters, %d lowercase, etc…</property>
+                    <property name="label" translatable="yes"
+>%d characters, %d lowercase, etc…</property>
                      <attributes>
                        <attribute name="style" value="italic"/>
                      </attributes>
@@ -337,13 +348,13 @@ class Gui:
         +------------------- ctxbox -----------------------+
         |          | +----- ctxbox2 -----------------------+
         | ctxlabel | | [_ctxentry________________________] |
-        |          | +----- ctxwarning --------------------+
-        |          | | ctxwarninglabel                     | (ctxwarning is only shown when ctxentry is changed to match an existing entry (createbtn is also disabled in this case))
-        |          | +-------------------------------------+
-        +------------------- passbox ----------------------+
+        |          | +----- ctxwarning --------------------+ (ctxwarning only shows when
+        |          | | ctxwarninglabel                     |  ctxentry matches existing
+        |          | +-------------------------------------+  entry (createbtn is also
+        +------------------- passbox ----------------------+  disabled in this case))
         |           +------ passbox2 --------+             |
-        | passlabel | [_passentry__________] | <createbtn> | createbtn saves, emits, and closes
-        |           | passdescription        |             |
+        | passlabel | [_passentry__________] | <createbtn> | createbtn saves, emits, and
+        |           | passdescription        |             | closes
         +-----------+------------------------+-------------+
         """
         self.db = db
@@ -516,7 +527,7 @@ class Gui:
             self.selected = self.db[sctx]
             if self.selected is None:
                 self.label.set_text(
-                    "weird -- no context found even though we thought there should be one"
+                    "weird -- no context found even though there should be one"
                 )
             else:
                 Gtk.main_quit()
@@ -588,14 +599,14 @@ class Gui:
     ) -> None:
         newpass = self.passentry.get_text()
         sctx = self.ctxentry.get_text().strip()
-        l = len(newpass)
+        ln = len(newpass)
         # FIXME: should check (and warn) for non-ascii characters
         lcount = len("".join(filter(lambda x: x.islower(), newpass)))
         ucount = len("".join(filter(lambda x: x.isupper(), newpass)))
         ncount = len("".join(filter(lambda x: x.isnumeric(), newpass)))
-        ocount = l - (lcount + ucount + ncount)
+        ocount = ln - (lcount + ucount + ncount)
         desc = "%d characters (%d lowercase, %d uppercase, %d number, %d other)" % (
-            l,
+            ln,
             lcount,
             ucount,
             ncount,
