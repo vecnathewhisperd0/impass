@@ -601,7 +601,8 @@ def format_commands(man: bool = False) -> str:
                         f"{name} yielded function {func} that did"
                         "not return a parser (internal error)"
                     )
-                usage = parser.format_usage()[len("usage: impass "):].strip()
+                startlen = len("usage: impass ")
+                usage = parser.format_usage()[startlen:].strip()
                 if parser.description is None:
                     desc = ""
                 else:
