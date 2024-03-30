@@ -1,3 +1,10 @@
+impass (0.13-1) unstable; urgency=medium
+
+  * New upstream release:
+    - support sway integration
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Sat, 30 Mar 2024 01:06:13 -0400
+
 impass (0.12.3-1) unstable; urgency=medium
 
   * New upstream minor cleanup release (Closes: #1053094)

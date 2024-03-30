@@ -29,19 +29,22 @@ Depends:
 Recommends:
  gir1.2-gtk-3.0,
  python3-gi,
+ python3-i3ipc,
  python3-xdo,
+ wtype,
  xclip,
 Description: Simple and secure password management and retrieval system
  Impass is a secure password manager that relies on your OpenPGP key
  for security and is designed to integrate in a minimal fashion into
- any X11 window manager.
+ any X11 window manager, or sway on Wayland.
  .
  Passwords and context strings are stored in a single
  OpenPGP-encrypted and signed file (meaning entry contexts are not
  exposed to the filesystem).  Along with a simple command-line
- interface, there is a streamlined GUI meant for X11 window manager
- integration.  When invoked, the GUI produces a prompt to search
+ interface, there is a streamlined GUI meant for X11 window manager or
+ sway integration.  When invoked, the GUI produces a prompt to search
  stored contexts.  New entries can also easily be created.  Passwords
  are securely retrieved without displaying on the screen.  Multiple
  retrieval methods are available, including auto-typing them directly
- into an X11 window (default), or inserting them into the X11 clipboard.
+ into an X11 window or sway container (default), or by inserting them
+ into the X11 clipboard.
