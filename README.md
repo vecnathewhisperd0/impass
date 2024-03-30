@@ -67,6 +67,9 @@ Recommends (for curses UI):
 Recommends (for sway integration):
   * i3ipc - talk to sway
   * wtype - emulate keyboard input
+  
+  For sway integration, including the contents of the file swayconfig
+  in ~/.config/sway/config is advised.
 
 Debian
 ------
