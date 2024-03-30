@@ -358,12 +358,10 @@ class Gui:
         +-----------+------------------------+-------------+
         """
         self.db = db
-        self.query = None
-        self.results = None
         self.selected: Optional[Dict[str, str]] = None
-        self.window: Optional[Gtk.Widget] = None
-        self.entry: Optional[Gtk.Widget] = None
-        self.label: Optional[Gtk.Widget] = None
+        self.window: Gtk.Widget
+        self.entry: Gtk.Widget
+        self.label: Gtk.Widget
         if query is not None:
             query = query.strip()
 
@@ -446,8 +444,6 @@ class Gui:
         self.builder.get_object("description").set_label(state)
 
     def update_simple_context_entry(self, widget: Optional[Gtk.Widget]) -> None:
-        if self.entry is None:
-            raise Exception("Gui is not initialized")
         sctx = self.entry.get_text().strip()
 
         if sctx in self.db:
@@ -475,8 +471,6 @@ class Gui:
     def simple_ctx_popup(
         self, entry: Gtk.Widget, widget: Gtk.Widget, data: Optional[Any] = None
     ) -> None:
-        if self.entry is None:
-            raise Exception("Gui is not initialized")
         sctx = self.entry.get_text().strip()
         if sctx in self.db:
             self.add_to_menu(
@@ -505,23 +499,6 @@ class Gui:
         widget.insert(sep, pos)
 
     def simpleclicked(self, widget: Gtk.Widget) -> None:
-        if self.entry is None:
-            raise Exception("Gui is not initialized")
-        sctx = self.entry.get_text().strip()
-        if sctx in self.db:
-            self.retrieve(None)
-        elif sctx is None or sctx == "":
-            self.customclicked(None)
-        else:
-            self.create(None)
-
-    def keypress(self, widget: Gtk.Widget, event: Gdk.EventKey) -> None:
-        if event.keyval == Gdk.KEY_Escape:
-            Gtk.main_quit()
-
-    def retrieve(self, widget: Gtk.Widget, data: Optional[Any] = None) -> None:
-        if self.entry is None or self.label is None:
-            raise Exception("Gui is not initialized")
         sctx = self.entry.get_text().strip()
         if sctx in self.db:
             self.selected = self.db[sctx]
@@ -531,20 +508,22 @@ class Gui:
                 )
             else:
                 Gtk.main_quit()
+        elif sctx is None or sctx == "":
+            self.customclicked(None)
         else:
-            self.label.set_text("no match")
+            self.create(None)
+
+    def keypress(self, widget: Gtk.Widget, event: Gdk.EventKey) -> None:
+        if event.keyval == Gdk.KEY_Escape:
+            Gtk.main_quit()
 
     def create(self, widget: Gtk.Widget, data: Optional[Any] = None) -> None:
-        if self.entry is None:
-            raise Exception("Gui is not initialized")
         sctx = self.entry.get_text().strip()
         self.selected = self.db.add(sctx)
         self.db.save()
         Gtk.main_quit()
 
     def deleteclicked(self, widget: Gtk.Widget) -> None:
-        if self.entry is None:
-            raise Exception("Gui is not initialized")
         sctx = self.entry.get_text().strip()
         confirmation = Gtk.MessageDialog(
             parent=self.window,
