@@ -17,6 +17,7 @@ from .db import Database, DatabaseError, DEFAULT_NEW_PASSWORD_OCTETS
 from .version import __version__
 
 PROG = "impass"
+_swaymark = f"🔐{PROG}"
 
 ############################################################
 
@@ -29,6 +30,7 @@ def xclip(text: str) -> None:
     p = subprocess.Popen(" ".join(["xclip", "-i"]), shell=True, stdin=subprocess.PIPE)
     p.communicate(text.encode("utf-8"))
     # FIXME: shouldn't we warn the user if xclip fails here?
+
 
 def log(*args: str) -> None:
     print(*args, file=sys.stderr)
@@ -376,11 +378,12 @@ def dump(args: Optional[List[str]]) -> argparse.ArgumentParser:
 
 
 def gui(
-    args: Optional[List[str]], method: Optional[str] = os.getenv("IMPASS_XPASTE", "xdo")
+    args: Optional[List[str]], method: Optional[str] = os.getenv("IMPASS_XPASTE", None)
 ) -> argparse.ArgumentParser:
-    """Launch minimal X GUI.
+    """Launch minimal GUI.
 
-    Good for X11 window manager integration. Upon invocation the user
+    Good for X11 or Wayland-based window manager integration.
+    Upon invocation the user
     will be prompted to decrypt the database, after which a graphical
     search prompt will be presented. If an additional string is
     provided, it will be added as the initial search string. All
@@ -401,6 +404,12 @@ def gui(
     argsns = parser.parse_args(args)
     from .gui import Gui
 
+    if method is None:
+        if os.getenv("SWAYSOCK", None) is not None:
+            method = "sway"
+        elif os.getenv("DISPLAY", None) is not None:
+            method = "xdo"
+
     if method == "xdo":
         try:
             import xdo  # type: ignore
@@ -416,6 +425,22 @@ def gui(
         win = x.get_focused_window()
     elif method == "xclip":
         pass
+    elif method == "sway":
+        try:
+            import i3ipc  # type: ignore
+        except ModuleNotFoundError:
+            error(
+                1,
+                """The i3ipc module is not found, so 'sway' pasting is not available.
+                Please install python3-i3ipc.""",
+            )
+        i3conn = i3ipc.Connection()
+        res = i3conn.command(f"mark {_swaymark}")
+        if len(res) != 1 and not res[0]["success"]:
+            error(1, "Failed to mark focused window")
+        con_info = i3conn.get_tree().find_focused()
+        if _swaymark not in con_info.marks:
+            error(1, "The focused window was not marked")
     else:
         error(1, "Unknown X paste method '{}'.".format(method))
     keyid = get_keyid()
@@ -429,6 +454,22 @@ def gui(
             x.type(result["password"])
         elif method == "xclip":
             xclip(result["password"])
+        elif method == "sway":
+            # pick the right element
+            criteria = f"con_mark={_swaymark} con_id={con_info.id} pid={con_info.pid}"
+            i3conn.command(f"[{criteria}] focus")
+            proc = subprocess.Popen(
+                ["wtype", "-"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            (stdout, stderr) = proc.communicate(result["password"].encode())
+            i3conn.command(f"[{criteria}] unmark")
+            if proc.returncode:
+                error(1, "failed to run wtype to inject keystrokes")
+        else:
+            error(1, f"Unknown X paste method '{method}'.")
     return parser
 
 
@@ -573,10 +614,12 @@ ENVIRONMENT
         Include passwords in dump when set.
 
     IMPASS_XPASTE  
-        Method for password retrieval. Options are: 'xdo', which
-        attempts to type the password into the window that had focus
-        on launch, or 'xclip' which inserts the password in the X
-        clipboard. Default: xdo
+        Method for password retrieval from GUI. Options are: 'xdo',
+        which attempts to type the password into the window that had
+        focus on launch, 'xclip' which inserts the password in the X
+        clipboard, and 'sway', which types the password into the
+        focused wayland container. Default: xdo or sway, detected
+        automatically.
 
 AUTHOR
     Jameson Graef Rollins <jrollins@finestructure.net>
