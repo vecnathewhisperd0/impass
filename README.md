@@ -77,7 +77,7 @@ Debian/Ubuntu snapshot packages can also be easily made from the git
 source.  You can build the package from any branch but it requires an
 up-to-date local branch of origin/debian, e.g.:
 
-    $ git branch debian/master origin/debian/master
+    $ git branch debian/unstable origin/debian/unstable
 
 Then:
 
