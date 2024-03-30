@@ -28,7 +28,7 @@ IMPASS_DIR = os.path.join(os.path.expanduser("~"), ".impass")
 def xclip(text: str) -> None:
     p = subprocess.Popen(" ".join(["xclip", "-i"]), shell=True, stdin=subprocess.PIPE)
     p.communicate(text.encode("utf-8"))
-
+    # FIXME: shouldn't we warn the user if xclip fails here?
 
 def log(*args: str) -> None:
     print(*args, file=sys.stderr)
