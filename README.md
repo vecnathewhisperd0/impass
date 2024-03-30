@@ -3,17 +3,20 @@ impass - simple and secure password management system
 
 impass is a secure password manager that relies on your OpenPGP key
 for security and is designed to integrate in a minimal fashion into
-any X11 window manager.
+any X11 window manager.  It also integrates into sway for a wayland
+session.
 
 Passwords and context strings are stored in a single OpenPGP-encrypted
 and signed file (meaning entry contexts are not exposed to the
 filesystem).  Along with a simple command-line interface, there is a
-streamlined GUI meant for X11 window manager integration.  When
-invoked, the GUI produces a prompt to search stored contexts.  New
-entries can also easily be created.  Passwords are securely retrieved
-without displaying on the screen.  Multiple retrieval methods are
-available, including auto-typing them directly into an X11 window
-(default), or inserting them into the X11 clipboard.
+streamlined GUI meant for X11 window manager integration or sway when
+using Wayland.
+
+When invoked, the GUI produces a prompt to search stored contexts.
+New entries can also easily be created.  Passwords are securely
+retrieved without displaying on the screen.  Multiple retrieval
+methods are available, including auto-typing them directly into an X11
+window (default), or inserting them into the X11 clipboard.
 
 impass was previously known as "assword".
 
@@ -57,9 +60,16 @@ Recommends (for graphical UI):
   * python3-gi - Python bindings for GObject Introspection
   * gir1.2-gtk-3.0 - GObject Introspection for GTK 3+ (GUI toolkit)
 
-Recommends (for curses UI) :
+Recommends (for curses UI):
   * python3-xdo - Support for simulating X11 input (libxdo bindings)
   * xclip - Support for accessing X11 clipboard
+
+Recommends (for sway integration):
+  * i3ipc - talk to sway
+  * wtype - emulate keyboard input
+  
+  For sway integration, including the contents of the file swayconfig
+  in ~/.config/sway/config is advised.
 
 Debian
 ------
@@ -70,7 +80,7 @@ Debian/Ubuntu snapshot packages can also be easily made from the git
 source.  You can build the package from any branch but it requires an
 up-to-date local branch of origin/debian, e.g.:
 
-    $ git branch debian/master origin/debian/master
+    $ git branch debian/unstable origin/debian/unstable
 
 Then:
 

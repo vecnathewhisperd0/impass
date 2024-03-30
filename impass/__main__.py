@@ -4,32 +4,35 @@ import os
 import io
 import sys
 import json
-import gpg
+import gpg  # type: ignore
 import getpass
 import argparse
 import textwrap
 import subprocess
 import collections
 
+from typing import Optional, NoReturn, List, Callable, Union, Sequence, Any, Dict
+
 from .db import Database, DatabaseError, DEFAULT_NEW_PASSWORD_OCTETS
 from .version import __version__
 
-PROG = 'impass'
+PROG = "impass"
+_swaymark = f"🔐{PROG}"
 
 ############################################################
 
-IMPASS_DIR = os.path.join(os.path.expanduser('~'),'.impass')
+IMPASS_DIR = os.path.join(os.path.expanduser("~"), ".impass")
 
 ############################################################
 
-def xclip(text):
-    p = subprocess.Popen(' '.join(["xclip", "-i"]),
-                         shell=True,
-                         stdin=subprocess.PIPE)
-    p.communicate(text.encode('utf-8'))
+
+def xclip(text: str) -> None:
+    p = subprocess.Popen(" ".join(["xclip", "-i"]), shell=True, stdin=subprocess.PIPE)
+    p.communicate(text.encode("utf-8"))
+    # FIXME: shouldn't we warn the user if xclip fails here?
 
 
-def log(*args):
+def log(*args: str) -> None:
     print(*args, file=sys.stderr)
 
 
@@ -41,20 +44,23 @@ def log(*args):
 # 10 db error
 # 20 gpg/key error
 ############################################################
-def error(code, msg=''):
+def error(code: int, msg: str = "") -> NoReturn:
     if msg:
         log(msg)
     sys.exit(code)
 
 
-def open_db(keyid=None, create=False):
-    DBPATH = os.getenv('IMPASS_DB', os.path.join(IMPASS_DIR, 'db'))
-    if not create and not os.path.exists(DBPATH):
-        error(5, """Impass database does not exist.
+def open_db(keyid: Optional[str] = None, create: bool = False) -> Database:
+    db_path = os.getenv("IMPASS_DB", os.path.join(IMPASS_DIR, "db"))
+    if not create and not os.path.exists(db_path):
+        error(
+            5,
+            """Impass database does not exist.
 To add an entry to the database use 'impass add'.
-See 'impass help' for more information.""")
+See 'impass help' for more information.""",
+        )
     try:
-        db = Database(DBPATH, keyid)
+        db = Database(db_path, keyid)
     except gpg.errors.GPGMEError as e:
         error(20, "Decryption error: {}".format(e))
     except DatabaseError as e:
@@ -64,26 +70,26 @@ See 'impass help' for more information.""")
     return db
 
 
-def get_keyid():
-    keyid = os.getenv('IMPASS_KEYID')
-    keyfile = os.getenv('IMPASS_KEYFILE', os.path.join(IMPASS_DIR, 'keyid'))
+def get_keyid() -> str:
+    keyid = os.getenv("IMPASS_KEYID")
+    keyfile = os.getenv("IMPASS_KEYFILE", os.path.join(IMPASS_DIR, "keyid"))
 
     if not keyid and os.path.exists(keyfile):
-        with open(keyfile, 'r') as f:
+        with open(keyfile, "r") as f:
             keyid = f.read().strip()
 
     save = False
-    if not keyid:
+    if keyid is None or keyid == "":
         log("OpenPGP key ID of encryption target not specified.")
         log("Please provide key ID in IMPASS_KEYID environment variable,")
         log("or specify key ID now to save in ~/.impass/keyid file.")
-        keyid = input('OpenPGP key ID: ')
-        if keyid == '':
+        keyid = input("OpenPGP key ID: ")
+        if keyid == "":
             keyid = None
         else:
             save = True
 
-    if not keyid:
+    if keyid is None or keyid == "":
         error(20)
 
     try:
@@ -97,29 +103,34 @@ def get_keyid():
     if save:
         if not os.path.isdir(os.path.dirname(keyfile)):
             os.mkdir(os.path.dirname(keyfile))
-        with open(keyfile, 'w') as f:
+        with open(keyfile, "w") as f:
             f.write(keyid)
 
     return keyid
 
 
 class Completer:
-    def __init__(self, completions=None):
-        self.completions = completions or []
-    def completer(self, text, index):
-        matching = [
-            c for c in self.completions if c.startswith(text)
-            ]
+    def __init__(self, completions: Optional[List[str]] = None):
+        if completions is None:
+            self.completions: List[str] = []
+        else:
+            self.completions = completions
+
+    def completer(self, text: str, index: int) -> Optional[str]:
+        matching = [c for c in self.completions if c.startswith(text)]
         try:
             return matching[index]
         except IndexError:
             return None
 
 
-def input_complete(prompt, completions=None, default=None):
+def input_complete(
+    prompt: str, completions: Optional[List[str]] = None, default: Optional[str] = None
+) -> str:
     try:
         # lifted from magic-wormhole/codes.py
         import readline
+
         c = Completer(completions)
         readline.set_startup_hook()
         if "libedit" in readline.__doc__:
@@ -127,7 +138,7 @@ def input_complete(prompt, completions=None, default=None):
         else:
             readline.parse_and_bind("tab: complete")
         readline.set_completer(c.completer)
-        readline.set_completer_delims(' ')
+        readline.set_completer_delims(" ")
         if default:
             readline.set_startup_hook(lambda: readline.insert_text(default))
     except ImportError:
@@ -138,12 +149,20 @@ def input_complete(prompt, completions=None, default=None):
         error(-1)
 
 
-def retrieve_context(arg, prompt='context: ', default=None, stdin=True, db=None):
-    if arg == '-' and stdin:
+def retrieve_context(
+    arg: Optional[str],
+    prompt: str = "context: ",
+    default: Optional[str] = None,
+    stdin: bool = True,
+    db: Optional[Database] = None,
+) -> str:
+    if arg == "-" and stdin:
         context = sys.stdin.read()
-    elif arg in [':', None]:
+    elif arg is None or arg == ":":
         if db:
-            context = input_complete(prompt, completions=[c for c in db], default=default)
+            context = input_complete(
+                prompt, completions=[c for c in db], default=default
+            )
         else:
             context = input_complete(prompt, default=default)
     else:
@@ -152,19 +171,29 @@ def retrieve_context(arg, prompt='context: ', default=None, stdin=True, db=None)
 
 
 class PasswordAction(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        if not os.getenv('IMPASS_PASSWORD'):
-            password = None
-        elif os.getenv('IMPASS_PASSWORD') in ['prompt',':']:
-            password = ':'
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: Optional[Union[str, Sequence[Any]]],
+        option_string: Optional[str] = None,
+    ) -> None:
+        env_password = os.getenv("IMPASS_PASSWORD")
+        if env_password is None or env_password == "":
+            password: Optional[Union[str, int]] = None
+        elif env_password in ["prompt", ":"]:
+            password = ":"
         else:
             try:
-                password = int(os.getenv('IMPASS_PASSWORD'))
+                password = int()
             except ValueError:
-                error(1, "IMPASS_PASSWORD environment variable is neither int nor 'prompt'.")
-        if values == ':':
-            password = ':'
-        elif values:
+                error(
+                    1,
+                    "IMPASS_PASSWORD environment variable is neither int nor 'prompt'.",
+                )
+        if values == ":":
+            password = ":"
+        elif isinstance(values, str):
             try:
                 password = int(values)
             except ValueError:
@@ -172,51 +201,60 @@ class PasswordAction(argparse.Action):
         setattr(namespace, self.dest, password)
 
 
-def retrieve_password(pwspec):
-    if pwspec == ':':
+def retrieve_password(pwspec: str) -> str:
+    if pwspec == ":":
         return input_password()
     else:
         log("Auto-generating password...")
         return pwspec
 
 
-def input_password():
+def input_password() -> str:
     try:
-        password0 = getpass.getpass('password: ')
-        password1 = getpass.getpass('reenter password: ')
+        password0 = getpass.getpass("password: ")
+        password1 = getpass.getpass("reenter password: ")
         if password0 != password1:
             error(2, "Passwords do not match.  Aborting.")
         return password0
     except KeyboardInterrupt:
         error(-1)
 
+
 ############################################################
 # command functions
 
-def add(args):
+
+def add(args: Optional[List[str]]) -> argparse.ArgumentParser:
     """Add new entry.
 
     If the context already exists in the database an error will be
     thrown.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' add',
-                                     description=add.__doc__)
-    parser.add_argument('context', nargs='?',
-                        help="existing database context, ':' for prompt, or '-' for stdin")
-    parser.add_argument('pwspec', nargs='?', action=PasswordAction,
-                        help="password spec: N octets or ':' for prompt")
-    if args is None: return parser
-    args = parser.parse_args(args)
+    parser = argparse.ArgumentParser(prog=PROG + " add", description=add.__doc__)
+    parser.add_argument(
+        "context",
+        nargs="?",
+        help="existing database context, ':' for prompt, or '-' for stdin",
+    )
+    parser.add_argument(
+        "pwspec",
+        nargs="?",
+        action=PasswordAction,
+        help="password spec: N octets or ':' for prompt",
+    )
+    if args is None:
+        return parser
+    argsns = parser.parse_args(args)
 
     keyid = get_keyid()
     db = open_db(keyid, create=True)
 
-    context = retrieve_context(args.context)
+    context = retrieve_context(argsns.context)
     if context in db:
         error(2, "Context '{}' already exists.".format(context))
 
-    password = retrieve_password(args.pwspec)
+    password = retrieve_password(argsns.pwspec)
 
     try:
         db.add(context, password)
@@ -224,32 +262,42 @@ def add(args):
     except DatabaseError as e:
         error(10, "Impass database error: {}".format(e.msg))
     log("New entry writen.")
+    return parser
 
 
-def replace(args):
+def replace(args: Optional[List[str]]) -> argparse.ArgumentParser:
     """Replace password for entry.
 
     If the context does not already exist in the database an error
     will be thrown.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' replace',
-                                     description=replace.__doc__)
-    parser.add_argument('context', nargs='?',
-                        help="existing database context, ':' for prompt, or '-' for stdin")
-    parser.add_argument('pwspec', nargs='?', action=PasswordAction,
-                        help="password spec: N octets or ':' for prompt")
-    if args is None: return parser
-    args = parser.parse_args(args)
+    parser = argparse.ArgumentParser(
+        prog=PROG + " replace", description=replace.__doc__
+    )
+    parser.add_argument(
+        "context",
+        nargs="?",
+        help="existing database context, ':' for prompt, or '-' for stdin",
+    )
+    parser.add_argument(
+        "pwspec",
+        nargs="?",
+        action=PasswordAction,
+        help="password spec: N octets or ':' for prompt",
+    )
+    if args is None:
+        return parser
+    argsns = parser.parse_args(args)
 
     keyid = get_keyid()
     db = open_db(keyid)
 
-    context = retrieve_context(args.context, db=db)
+    context = retrieve_context(argsns.context, db=db)
     if context not in db:
         error(2, "Context '{}' not found.".format(context))
 
-    password = retrieve_password(args.pwspec)
+    password = retrieve_password(argsns.pwspec)
 
     try:
         db.replace(context, password)
@@ -257,32 +305,39 @@ def replace(args):
     except DatabaseError as e:
         error(10, "Impass database error: {}".format(e.msg))
     log("Password replaced.")
+    return parser
 
 
-def update(args):
+def update(args: Optional[List[str]]) -> argparse.ArgumentParser:
     """Update context for existing entry, keeping password the same.
 
     Special context value of '-' can only be provided to the old
     context.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' update',
-                                     description=update.__doc__)
-    parser.add_argument('old_context', nargs='?',
-                        help="existing database context, ':' for prompt, or '-' for stdin")
-    parser.add_argument('new_context', nargs='?',
-                        help="new database context or ':' for prompt")
-    if args is None: return parser
-    args = parser.parse_args(args)
+    parser = argparse.ArgumentParser(prog=PROG + " update", description=update.__doc__)
+    parser.add_argument(
+        "old_context",
+        nargs="?",
+        help="existing database context, ':' for prompt, or '-' for stdin",
+    )
+    parser.add_argument(
+        "new_context", nargs="?", help="new database context or ':' for prompt"
+    )
+    if args is None:
+        return parser
+    argsns = parser.parse_args(args)
 
     keyid = get_keyid()
     db = open_db(keyid)
 
-    old_context = retrieve_context(args.old_context, prompt='old context: ', db=db)
+    old_context = retrieve_context(argsns.old_context, prompt="old context: ", db=db)
     if old_context not in db:
         error(2, "Context '{}' not found".format(old_context))
 
-    new_context = retrieve_context(args.new_context, prompt='new context: ', default=old_context, stdin=False)
+    new_context = retrieve_context(
+        argsns.new_context, prompt="new context: ", default=old_context, stdin=False
+    )
     if new_context in db:
         error(2, "Context '{}' already exists.".format(new_context))
 
@@ -292,9 +347,10 @@ def update(args):
     except DatabaseError as e:
         error(10, "Impass database error: {}".format(e.msg))
     log("Entry updated.")
+    return parser
 
 
-def dump(args):
+def dump(args: Optional[List[str]]) -> argparse.ArgumentParser:
     """Dump password database to stdout as json.
 
     If a string is provide only entries whose context contains the
@@ -303,28 +359,31 @@ def dump(args):
     set.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' dump',
-                                     description=dump.__doc__)
-    parser.add_argument('string', nargs='?',
-                        help="substring match for contexts")
-    if args is None: return parser
-    args = parser.parse_args(args)
+    parser = argparse.ArgumentParser(prog=PROG + " dump", description=dump.__doc__)
+    parser.add_argument("string", nargs="?", help="substring match for contexts")
+    if args is None:
+        return parser
+    argsns = parser.parse_args(args)
     keyid = get_keyid()
     db = open_db(keyid)
-    results = db.search(args.string)
-    output = {}
+    results = db.search(argsns.string)
+    output: Dict[str, Dict[str, str]] = {}
     for context in results:
         output[context] = {}
-        output[context]['date'] = results[context]['date']
-        if os.getenv('IMPASS_DUMP_PASSWORDS'):
-            output[context]['password'] = results[context]['password']
+        output[context]["date"] = results[context]["date"]
+        if os.getenv("IMPASS_DUMP_PASSWORDS"):
+            output[context]["password"] = results[context]["password"]
     print(json.dumps(output, sort_keys=True, indent=2))
+    return parser
 
 
-def gui(args, method=os.getenv('IMPASS_XPASTE', 'xdo')):
-    """Launch minimal X GUI.
+def gui(
+    args: Optional[List[str]], method: Optional[str] = os.getenv("IMPASS_XPASTE", None)
+) -> argparse.ArgumentParser:
+    """Launch minimal GUI.
 
-    Good for X11 window manager integration. Upon invocation the user
+    Good for X11 or Wayland-based window manager integration.
+    Upon invocation the user
     will be prompted to decrypt the database, after which a graphical
     search prompt will be presented. If an additional string is
     provided, it will be added as the initial search string. All
@@ -338,57 +397,103 @@ def gui(args, method=os.getenv('IMPASS_XPASTE', 'xdo')):
     accessible through the GUI.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' gui',
-                                     description=gui.__doc__)
-    parser.add_argument('string', nargs='?',
-                        help="substring match for contexts")
-    if args is None: return parser
-    args = parser.parse_args(args)
+    parser = argparse.ArgumentParser(prog=PROG + " gui", description=gui.__doc__)
+    parser.add_argument("string", nargs="?", help="substring match for contexts")
+    if args is None:
+        return parser
+    argsns = parser.parse_args(args)
     from .gui import Gui
-    if method == 'xdo':
+
+    if method is None:
+        if os.getenv("SWAYSOCK", None) is not None:
+            method = "sway"
+        elif os.getenv("DISPLAY", None) is not None:
+            method = "xdo"
+
+    if method == "xdo":
         try:
-            import xdo
+            import xdo  # type: ignore
         except ModuleNotFoundError:
-            error(1, """The xdo module is not found, so the 'xdo' paste method is not available.
-Please install python3-xdo.""")
+            error(
+                1,
+                """The xdo module is not found, so 'xdo' pasting is not available.
+                Please install python3-xdo.""",
+            )
         # initialize xdo
         x = xdo.xdo()
         # get the id of the currently focused window
         win = x.get_focused_window()
-    elif method == 'xclip':
+    elif method == "xclip":
         pass
+    elif method == "sway":
+        try:
+            import i3ipc  # type: ignore
+        except ModuleNotFoundError:
+            error(
+                1,
+                """The i3ipc module is not found, so 'sway' pasting is not available.
+                Please install python3-i3ipc.""",
+            )
+        i3conn = i3ipc.Connection()
+        res = i3conn.command(f"mark {_swaymark}")
+        if len(res) != 1 and not res[0]["success"]:
+            error(1, "Failed to mark focused window")
+        con_info = i3conn.get_tree().find_focused()
+        if _swaymark not in con_info.marks:
+            error(1, "The focused window was not marked")
     else:
         error(1, "Unknown X paste method '{}'.".format(method))
     keyid = get_keyid()
     db = open_db(keyid)
-    result = Gui(db, query=args.string).returnValue()
+    result = Gui(db, query=argsns.string).return_value()
     # type the password in the saved window
     if result:
-        if method == 'xdo':
+        if method == "xdo":
             x.focus_window(win)
             x.wait_for_window_focus(win)
-            x.type(result['password'])
-        elif method == 'xclip':
-            xclip(result['password'])
+            x.type(result["password"])
+        elif method == "xclip":
+            xclip(result["password"])
+        elif method == "sway":
+            # pick the right element
+            criteria = f"con_mark={_swaymark} con_id={con_info.id} pid={con_info.pid}"
+            i3conn.command(f"[{criteria}] focus")
+            proc = subprocess.Popen(
+                ["wtype", "-"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            (stdout, stderr) = proc.communicate(result["password"].encode())
+            i3conn.command(f"[{criteria}] unmark")
+            if proc.returncode:
+                error(1, "failed to run wtype to inject keystrokes")
+        else:
+            error(1, f"Unknown X paste method '{method}'.")
+    return parser
 
-def remove(args):
+
+def remove(args: Optional[List[str]]) -> argparse.ArgumentParser:
     """Remove entry.
 
     If the context does not already exist in the database an error
     will be thrown.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG+' remove',
-                                     description=remove.__doc__)
-    parser.add_argument('context', nargs='?',
-                        help="existing database context, ':' for prompt, or '-' for stdin")
-    if args is None: return parser
-    args = parser.parse_args(args)
+    parser = argparse.ArgumentParser(prog=PROG + " remove", description=remove.__doc__)
+    parser.add_argument(
+        "context",
+        nargs="?",
+        help="existing database context, ':' for prompt, or '-' for stdin",
+    )
+    if args is None:
+        return parser
+    argsns = parser.parse_args(args)
 
     keyid = get_keyid()
     db = open_db(keyid)
 
-    context = retrieve_context(args.context, db=db)
+    context = retrieve_context(argsns.context, db=db)
     if context not in db:
         error(2, "Context '{}' not found.".format(context))
 
@@ -397,7 +502,7 @@ def remove(args):
         response = input("Type 'yes' to remove: ")
     except KeyboardInterrupt:
         error(-1)
-    if response != 'yes':
+    if response != "yes":
         error(-1)
 
     try:
@@ -406,44 +511,54 @@ def remove(args):
     except DatabaseError as e:
         error(10, "Impass database error: {}".format(e.msg))
     log("Entry removed.")
+    return parser
 
 
-def print_help(args):
+def print_help(args: Optional[List[str]]) -> argparse.ArgumentParser:
     """Full usage or command help (also '-h' after command)."""
-    parser = argparse.ArgumentParser(prog=PROG+' help',
-                                     description=print_help.__doc__)
-    if args is None: return parser
+    parser = argparse.ArgumentParser(
+        prog=PROG + " help", description=print_help.__doc__
+    )
+    if args is None:
+        return parser
     # if no argument is provided print the full man page
     try:
-        cmd  = args[0]
+        cmd = args[0]
     except IndexError:
         print_manpage()
-        return
+        return parser
     # otherwise assume the first argument is a command and print it's
     # help
     func = get_func(cmd)
-    func(['-h'])
+    func(["-h"])
+    return parser
 
 
-def version(args):
+def version(args: Optional[List[str]]) -> argparse.ArgumentParser:
     """Print version."""
-    parser = argparse.ArgumentParser(prog=PROG+' version',
-                                     description=version.__doc__)
-    if args is None: return parser
+    parser = argparse.ArgumentParser(
+        prog=PROG + " version", description=version.__doc__
+    )
+    if args is None:
+        return parser
     print(__version__)
+    return parser
+
 
 ############################################################
 # main
 
-synopsis = """{prog} <command> [<args>...]""".format(prog=PROG)
+synopsis = f"{PROG} <command> [<args>...]"
+
 
 # NOTE: double spaces are interpreted by text2man to be paragraph
 # breaks.  NO DOUBLE SPACES.  Also two spaces at the end of a line
 # indicate an element in a tag list.
-def print_manpage():
-    print("""
+def print_manpage() -> None:
+    print(
+        f"""
 NAME
-  {prog} - Simple and secure password management and retrieval system
+  {PROG} - Simple and secure password management and retrieval system
 
 SYNOPSIS
   {synopsis}
@@ -463,7 +578,7 @@ DESCRIPTION
   specify a context of '-' to read the context from stdin, or ':' to
   force a prompt.
 
-  Passwords are auto-generated by default with {octets} bytes of
+  Passwords are auto-generated by default with {DEFAULT_NEW_PASSWORD_OCTETS} bytes of
   entropy. The number of octets can be specified with the
   IMPASS_PASSWORD environment variable or via the 'pwspec' optional
   argument to relevant commands. The length of the actually generated
@@ -473,7 +588,7 @@ DESCRIPTION
 
 COMMANDS
 
-{cmds}
+{format_commands(man=True)}
 
 SIGNATURES
     During decryption, OpenPGP signatures on the db file are checked
@@ -499,61 +614,79 @@ ENVIRONMENT
         Include passwords in dump when set.
 
     IMPASS_XPASTE  
-        Method for password retrieval. Options are: 'xdo', which
-        attempts to type the password into the window that had focus
-        on launch, or 'xclip' which inserts the password in the X
-        clipboard. Default: xdo
+        Method for password retrieval from GUI. Options are: 'xdo',
+        which attempts to type the password into the window that had
+        focus on launch, 'xclip' which inserts the password in the X
+        clipboard, and 'sway', which types the password into the
+        focused wayland container. Default: xdo or sway, detected
+        automatically.
 
 AUTHOR
     Jameson Graef Rollins <jrollins@finestructure.net>
     Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-""".format(prog=PROG,
-           synopsis=synopsis,
-           cmds=format_commands(man=True),
-           octets=DEFAULT_NEW_PASSWORD_OCTETS).strip())
+""".strip()  # noqa: W291 (trailing whitespace)
+    )
 
 
-def format_commands(man=False):
-    prefix = ' '*8
+def format_commands(man: bool = False) -> str:
+    prefix = " " * 8
     wrapper = textwrap.TextWrapper(
         width=70,
         initial_indent=prefix,
         subsequent_indent=prefix,
-        )
+    )
     with io.StringIO("some initial text data") as f:
         for name, func in CMDS.items():
             if man:
                 parser = func(None)
-                usage = parser.format_usage()[len('usage: impass '):].strip()
-                desc = wrapper.fill('\n'.join([l.strip() for l in parser.description.splitlines() if l]))
+                if parser is None:
+                    raise Exception(
+                        f"{name} yielded function {func} that did"
+                        "not return a parser (internal error)"
+                    )
+                startlen = len("usage: impass ")
+                usage = parser.format_usage()[startlen:].strip()
+                if parser.description is None:
+                    desc = ""
+                else:
+                    desc = wrapper.fill(
+                        "\n".join(
+                            [ln.strip() for ln in parser.description.splitlines() if ln]
+                        )
+                    )
                 f.write("  {}  \n".format(usage))
-                f.write(desc+'\n')
-                f.write('\n')
+                f.write(desc + "\n")
+                f.write("\n")
             else:
-                desc = func.__doc__.splitlines()[0]
-                f.write("  {:15}{}\n".format(name, desc))
+                if func.__doc__ is not None:
+                    desc = func.__doc__.splitlines()[0]
+                    f.write("  {:15}{}\n".format(name, desc))
         output = f.getvalue()
     return output.rstrip()
 
 
-CMDS = collections.OrderedDict([
-    ('add', add),
-    ('replace', replace),
-    ('update', update),
-    ('dump', dump),
-    ('gui', gui),
-    ('remove', remove),
-    ('help', print_help),
-    ('version', version),
-    ])
+CMDS: collections.OrderedDict[
+    str, Callable[[Optional[List[str]]], argparse.ArgumentParser]
+] = collections.OrderedDict(
+    [
+        ("add", add),
+        ("replace", replace),
+        ("update", update),
+        ("dump", dump),
+        ("gui", gui),
+        ("remove", remove),
+        ("help", print_help),
+        ("version", version),
+    ]
+)
 ALIAS = {
-    '--version': 'version',
-    '--help': 'help',
-    '-h': 'help',
-    }
+    "--version": "version",
+    "--help": "help",
+    "-h": "help",
+}
 
 
-def get_func(cmd):
+def get_func(cmd: str) -> Callable[[Optional[List[str]]], argparse.ArgumentParser]:
     """Retrieve the appropriate function from the command argument."""
     if cmd in ALIAS:
         cmd = ALIAS[cmd]
@@ -565,7 +698,7 @@ def get_func(cmd):
         error(1)
 
 
-def main():
+def main() -> None:
     if len(sys.argv) < 2:
         log("Command not specified.")
         log("usage: {}".format(synopsis))
@@ -577,42 +710,52 @@ def main():
     args = sys.argv[2:]
     func = get_func(cmd)
 
-    ### DEPRECATE: this is for the assword->impass transition
-    if os.path.basename(sys.argv[0]) == 'assword':
-        log("""WARNING: assword has been renamed "impass".  Please update your invocations.""")
+    # DEPRECATE: this is for the assword->impass transition
+    if os.path.basename(sys.argv[0]) == "assword":
+        log("WARNING: assword has been renamed impass. Please update your invocations.")
     vfound = []
-    for var in ['DB', 'KEYFILE', 'KEYID', 'PASSWORD', 'DUMP_PASSWORDS', 'XPASTE']:
-        val = os.getenv('ASSWORD_'+var)
+    for var in ["DB", "KEYFILE", "KEYID", "PASSWORD", "DUMP_PASSWORDS", "XPASTE"]:
+        val = os.getenv("ASSWORD_" + var)
         if val:
             vfound.append(var)
-            if not os.getenv('IMPASS_'+var):
-                os.environ['IMPASS_'+var] = val
+            if not os.getenv("IMPASS_" + var):
+                os.environ["IMPASS_" + var] = val
     if vfound:
-        log("""WARNING: assword has been renamed "impass".  Please update your environment variables:""")
+        log(
+            """WARNING: assword has been renamed impass.
+        Please update your environment variables:"""
+        )
         for var in vfound:
             log("  ASSWORD_{var} -> IMPASS_{var}".format(var=var))
-    assword_dir = os.path.join(os.path.expanduser('~'),'.assword')
-    if os.path.exists(assword_dir) and \
-       (not os.path.islink(assword_dir)) and \
-       os.path.isdir(assword_dir) and \
-       (not os.getenv('IMPASS_DB')) and \
-       cmd not in ['help', 'version', '-h', '--help', '--version']:
+    assword_dir = os.path.join(os.path.expanduser("~"), ".assword")
+    if (
+        os.path.exists(assword_dir)
+        and (not os.path.islink(assword_dir))
+        and os.path.isdir(assword_dir)
+        and (not os.getenv("IMPASS_DB"))
+        and cmd not in ["help", "version", "-h", "--help", "--version"]
+    ):
         try:
             os.rename(assword_dir, IMPASS_DIR)
-            linkok = False
+            linkerr: Optional[str] = None
             try:
                 os.symlink(IMPASS_DIR, assword_dir)
-                linkok = True
-            except:
+            except Exception as e:
+                linkerr = str(e)
                 pass
             print("renamed ~/.assword -> ~/.impass", file=sys.stderr)
-            if not linkok:
-                print("(tried to symlink ~/.assword to ~/.impass as well, but symlinking failed)", file=sys.stderr)
-        except:
-            sys.exit("Could not rename old assword directory ~/.assword -> ~/.impass.\nPlease check ~/.impass path.")
+            if linkerr is not None:
+                linkerr = f"(failed symlinking ~/.assword to ~/.impass ({linkerr}))"
+                print(linkerr, file=sys.stderr)
+        except Exception as e:
+            sys.exit(
+                f"""Could not rename old assword directory ~/.assword -> ~/.impass.
+            Error: {e}
+            Please check ~/.impass path."""
+            )
         os.symlink(IMPASS_DIR, assword_dir)
         log("renamed ~/.assword -> ~/.impass")
-    ### DEPRECATE
+    # DEPRECATE
 
     cmd = sys.argv[1]
     args = sys.argv[2:]

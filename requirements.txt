@@ -1,3 +1,4 @@
 gpg
 PyGobject
 xdo
+i3ipc
