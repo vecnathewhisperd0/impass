@@ -6,6 +6,7 @@ Uploaders:
  Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
 Build-Depends:
  debhelper-compat (= 13),
+ dh-exec,
  dh-python,
  pkgconf,
  python3,

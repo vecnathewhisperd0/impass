@@ -1,1 +1,2 @@
-swayconfig /etc/sway/config.d/99-impass.conf
+#!/usr/bin/dh-exec
+swayconfig => /etc/sway/config.d/99-impass.conf
