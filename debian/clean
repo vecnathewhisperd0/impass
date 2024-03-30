@@ -1,5 +1,7 @@
 impass.1
 impass.egg-info/
+.mypy_cache/
+impass/.mypy_cache/
 test/gnupg/
 test/tmp.cli/
 test/tmp.library/
