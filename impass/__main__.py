@@ -441,6 +441,7 @@ def gui(
         con_info = i3conn.get_tree().find_focused()
         if _swaymark not in con_info.marks:
             error(1, "The focused window was not marked")
+        criteria = f"con_mark={_swaymark} con_id={con_info.id} pid={con_info.pid}"
     else:
         error(1, "Unknown X paste method '{}'.".format(method))
     keyid = get_keyid()
@@ -456,7 +457,6 @@ def gui(
             xclip(result["password"])
         elif method == "sway":
             # pick the right element
-            criteria = f"con_mark={_swaymark} con_id={con_info.id} pid={con_info.pid}"
             i3conn.command(f"[{criteria}] focus")
             proc = subprocess.Popen(
                 ["wtype", "-"],
@@ -470,6 +470,10 @@ def gui(
                 error(1, "failed to run wtype to inject keystrokes")
         else:
             error(1, f"Unknown X paste method '{method}'.")
+    else:
+        if method == "sway":
+            i3conn.command(f"[{criteria}] unmark")
+
     return parser
 
 
