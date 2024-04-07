@@ -1,3 +1,11 @@
+impass (0.13.1-1) unstable; urgency=medium
+
+  * New upstream release
+    - (clean up sway integration properly when impass gui is canceled)
+  * move to unstable
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Sun, 07 Apr 2024 12:51:57 -0400
+
 impass (0.13-1) experimental; urgency=medium
 
   * New upstream release to experimental
