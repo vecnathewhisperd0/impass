@@ -268,8 +268,8 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
                     <property name="visible">True</property>
                     <property name="visibility">False</property>
                     <property name="can-focus">True</property>
-                    <property name="primary-icon-stock">gtk-refresh</property>
-                    <property name="secondary-icon-stock">gtk-find</property>
+                    <property name="primary-icon-name">view-refresh</property>
+                    <property name="secondary-icon-name">edit-find</property>
                     <property name="primary-icon-tooltip-text" translatable="yes"
 >generate a new password</property>
                     <property name="secondary-icon-tooltip-text" translatable="yes"
