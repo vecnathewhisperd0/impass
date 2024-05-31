@@ -35,12 +35,11 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
     <property name="can-focus">False</property>
     <property name="halign">end</property>
     <child>
-      <object class="GtkImageMenuItem" id="deletemenuitem">
-        <property name="label">gtk-delete</property>
+      <object class="GtkMenuItem" id="deletemenuitem">
+        <property name="label" translatable="yes">Delete</property>
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="use-underline">True</property>
-        <property name="use-stock">True</property>
       </object>
     </child>
   </object>
@@ -49,7 +48,7 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
     <property name="can-focus">False</property>
     <property name="halign">end</property>
     <child>
-      <object class="GtkImageMenuItem" id="custommenuitem">
+      <object class="GtkMenuItem" id="custommenuitem">
         <property name="label" translatable="yes">Create custom…</property>
         <property name="visible">True</property>
         <property name="can-focus">False</property>
