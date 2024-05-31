@@ -192,7 +192,7 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
                   <object class="GtkEntry" id="ctxentry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="placeholder_text"translatable="yes"
+                    <property name="placeholder_text" translatable="yes"
 >Enter context…</property>
                   </object>
                   <packing>
