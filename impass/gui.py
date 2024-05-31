@@ -32,50 +32,50 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkMenu" id="emitmenu">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="halign">end</property>
     <child>
       <object class="GtkImageMenuItem" id="deletemenuitem">
         <property name="label">gtk-delete</property>
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="use_underline">True</property>
-        <property name="use_stock">True</property>
+        <property name="can-focus">False</property>
+        <property name="use-underline">True</property>
+        <property name="use-stock">True</property>
       </object>
     </child>
   </object>
   <object class="GtkMenu" id="createmenu">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="halign">end</property>
     <child>
       <object class="GtkImageMenuItem" id="custommenuitem">
         <property name="label" translatable="yes">Create custom…</property>
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="use_underline">True</property>
+        <property name="can-focus">False</property>
+        <property name="use-underline">True</property>
       </object>
     </child>
   </object>
   <object class="GtkWindow" id="impass-gui">
-    <property name="can_focus">False</property>
-    <property name="border_width">4</property>
+    <property name="can-focus">False</property>
+    <property name="border-width">4</property>
     <property name="title" translatable="yes">impass</property>
-    <property name="icon_name">dialog-password</property>
+    <property name="icon-name">dialog-password</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox" id="warning">
             <property name="visible">False</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkLabel" id="notification">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes"
 >WARNING: could not validate signature on db file!</property>
                 <attributes>
@@ -91,7 +91,7 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
             <child>
               <object class="GtkSeparator">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -109,7 +109,7 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
         <child>
           <object class="GtkLabel" id="description">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="label">Global state of impass gui</property>
           </object>
           <packing>
@@ -121,13 +121,13 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
         <child>
           <object class="GtkBox" id="simplebox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <child>
               <object class="GtkEntry" id="simplectxentry">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="width_chars">50</property>
-                <property name="placeholder_text" translatable="yes"
+                <property name="can-focus">True</property>
+                <property name="width-chars">50</property>
+                <property name="placeholder-text" translatable="yes"
 >Enter context…</property>
               </object>
               <packing>
@@ -140,8 +140,8 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
               <object class="GtkButton" id="simplebtn">
                 <property name="label" translatable="yes">Emit</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -152,8 +152,8 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
             <child>
               <object class="GtkMenuButton" id="simplemenubtn">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -170,11 +170,11 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
         </child>
         <child>
           <object class="GtkBox" id="ctxbox">
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <child>
               <object class="GtkLabel" id="ctxlabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Context:</property>
               </object>
               <packing>
@@ -186,13 +186,13 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
             <child>
               <object class="GtkBox" id="ctxbox2">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkEntry" id="ctxentry">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="placeholder_text" translatable="yes"
+                    <property name="can-focus">True</property>
+                    <property name="placeholder-text" translatable="yes"
 >Enter context…</property>
                   </object>
                   <packing>
@@ -204,11 +204,11 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
                 <child>
                   <object class="GtkBox" id="ctxwarning">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkLabel" id="ctxwarninglabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes"
 >This context already exists!</property>
                         <attributes>
@@ -245,11 +245,11 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
         </child>
         <child>
           <object class="GtkBox" id="passbox">
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <child>
               <object class="GtkLabel" id="passlabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Password:</property>
               </object>
               <packing>
@@ -261,22 +261,22 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
             <child>
               <object class="GtkBox" id="passbox2">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkEntry" id="passentry">
                     <property name="visible">True</property>
                     <property name="visibility">False</property>
-                    <property name="can_focus">True</property>
-                    <property name="primary_icon_stock">gtk-refresh</property>
-                    <property name="secondary_icon_stock">gtk-find</property>
-                    <property name="primary_icon_tooltip_text" translatable="yes"
+                    <property name="can-focus">True</property>
+                    <property name="primary-icon-stock">gtk-refresh</property>
+                    <property name="secondary-icon-stock">gtk-find</property>
+                    <property name="primary-icon-tooltip-text" translatable="yes"
 >generate a new password</property>
-                    <property name="secondary_icon_tooltip_text" translatable="yes"
+                    <property name="secondary-icon-tooltip-text" translatable="yes"
 >show password</property>
-                    <property name="placeholder_text" translatable="yes"
+                    <property name="placeholder-text" translatable="yes"
 >You must enter a password!</property>
-                    <property name="input_purpose">password</property>
+                    <property name="input-purpose">password</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -287,7 +287,7 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
                 <child>
                   <object class="GtkLabel" id="passdescription">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes"
 >%d characters, %d lowercase, etc…</property>
                      <attributes>
@@ -311,8 +311,8 @@ _gui_layout = """<?xml version="1.0" encoding="UTF-8"?>
               <object class="GtkButton" id="createbtn">
                 <property name="label" translatable="yes">Create and emit</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
