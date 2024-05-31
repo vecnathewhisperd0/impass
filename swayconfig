@@ -4,4 +4,5 @@ for_window [app_id="^impass$" ] {
    title_format "🔐%title"
    floating enable
    sticky enable
+   border normal 0
 }
