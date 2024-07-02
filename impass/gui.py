@@ -30,7 +30,7 @@ class Gui:
         +------------------- ctxbox -----------------------+
         |          | +----- ctxbox2 -----------------------+
         | ctxlabel | | [_ctxentry________________________] |
-        |          | +----- ctxwarning --------------------+ (ctxwarning only shows when
+        |          | +---------------- --------------------+ (ctxwarninglabel shows when
         |          | | ctxwarninglabel                     |  ctxentry matches existing
         |          | +-------------------------------------+  entry (createbtn is also
         +------------------- passbox ----------------------+  disabled in this case))
@@ -142,13 +142,11 @@ class Gui:
                                   hexpand=True,
                                   placeholder_text="Enter context…")
         self.ctxbox2.append(self.ctxentry)
-        self.ctxwarning = Gtk.Box(name="ctxwarning")
-        self.ctxbox2.append(self.ctxwarning)
         self.ctxwarninglabel = Gtk.Label(name="ctxwarninglabel",
                                          visible=False,
                                          css_classes=['warning'],
                                          label="⚠ This context already exists!")
-        self.ctxwarning.append(self.ctxwarninglabel)
+        self.ctxbox2.append(self.ctxwarninglabel)
 
         self.passbox = Gtk.Box(name="passbox",
                                visible=False)
@@ -390,14 +388,14 @@ class Gui:
     ) -> None:
         sctx = self.ctxentry.get_text().strip()
         if sctx in self.db:
-            self.ctxwarning.show()
+            self.ctxwarninglabel.set_visible(True)
             self.ctxwarninglabel.set_text("The context '%s' already exists!" % (sctx))
             self.createbtn.set_sensitive(False)
         elif sctx is None or sctx == "":
-            self.ctxwarning.hide()
+            self.ctxwarninglabel.set_visible(False)
             self.createbtn.set_sensitive(False)
         else:
-            self.ctxwarning.hide()
+            self.ctxwarninglabel.set_visible(False)
             self.createbtn.set_sensitive(self.passentry.get_text() != "")
 
     def update_passentry(
