@@ -369,9 +369,9 @@ class Gui:
     def customclicked(self, action: Gio.Action, param: GLib.Variant) -> None:
         if self.ctxentry is None or self.entry is None:
             raise Exception("Gui is not initialized")
-        self.simplebox.hide()
-        self.ctxbox.show()
-        self.passbox.show()
+        self.simplebox.set_visible(False)
+        self.ctxbox.set_visible(True)
+        self.passbox.set_visible(True)
         self.ctxentry.set_text(self.entry.get_text())
         selection = self.entry.get_selection_bounds()
         if selection:
