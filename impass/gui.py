@@ -220,8 +220,8 @@ class Gui:
         self.window.add_action(showpassaction)
 
         self.passmenu = Gio.Menu()
-        self.passmenu.insert(0, 'Generate a new password', 'win.refreshpass')
-        self.passmenu.insert(1, 'Show password', 'win.showpass')
+        self.passmenu.insert(0, '_Generate a new password', 'win.refreshpass')
+        self.passmenu.insert(1, '_Show password', 'win.showpass')
         self.passentry.set_extra_menu(self.passmenu)
 
         self.eck = Gtk.EventControllerKey()
@@ -450,7 +450,7 @@ class Gui:
         label = "Hide password" if newvis else "Show password"
         self.passentry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, label)
         self.passmenu.remove(1)
-        self.passmenu.insert(1, label, 'win.showpass')
+        self.passmenu.insert(1, f'_{label}', 'win.showpass')
 
     def refreshpass(self, action: Optional[Gio.Action] = None, param: Optional[GLib.Variant] = None) -> None:
         pwsize = os.environ.get("IMPASS_PASSWORD", DEFAULT_NEW_PASSWORD_OCTETS)
