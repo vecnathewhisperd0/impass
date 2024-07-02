@@ -212,6 +212,18 @@ class Gui:
         
         self.warning.set_visible(not self.db.sigvalid)
 
+        refreshpassaction = Gio.SimpleAction.new("refreshpass", None)
+        refreshpassaction.connect("activate", self.refreshpass)
+        self.window.add_action(refreshpassaction)
+        showpassaction = Gio.SimpleAction.new("showpass", None)
+        showpassaction.connect("activate", self.showhidepass)
+        self.window.add_action(showpassaction)
+
+        self.passmenu = Gio.Menu()
+        self.passmenu.insert(0, 'Generate a new password', 'win.refreshpass')
+        self.passmenu.insert(1, 'Show password', 'win.showpass')
+        self.passentry.set_extra_menu(self.passmenu)
+
         self.eck = Gtk.EventControllerKey()
         self.eck.connect('key-pressed', self.keypress)
         self.window.add_controller(self.eck)
@@ -229,8 +241,6 @@ class Gui:
         self.passentry.connect("changed", self.update_passentry)
         self.passentry.connect("activate", self.customcreateclicked)
         self.passentry.connect("icon-press", self.passentry_icon_clicked)
-        # FIXME: add alternate context menu items
-        #self.passentry.connect("populate-popup", self.passentry_popup)
         self.createbtn.connect("clicked", self.customcreateclicked)
 
         if self.query:
@@ -425,38 +435,24 @@ class Gui:
         self,
         widget: Gtk.Widget,
         pos: Gtk.EntryIconPosition,
-        event: Optional[Gdk.Event] = None,
         data: Optional[Any] = None,
     ) -> None:
         if pos == Gtk.EntryIconPosition.PRIMARY:
             self.refreshpass()
         elif pos == Gtk.EntryIconPosition.SECONDARY:
-            newvis = not self.passentry.get_visibility()
-            self.passentry.set_visibility(newvis)
-            self.passentry.set_icon_tooltip_text(
-                Gtk.EntryIconPosition.SECONDARY,
-                "hide password" if newvis else "show password",
-            )
+            self.showhidepass()
 
-    def passentry_popup(
-        self, entry: Gtk.Entry, widget: Gtk.Widget, data: Optional[Any] = None
-    ) -> None:
-        self.add_to_menu(widget, "Generate a new password", self.refreshpass, 0)
-        self.add_to_menu(
-            widget,
-            "Hide password" if self.passentry.get_visibility() else "Show password",
-            lambda x: self.passentry_icon_clicked(
-                widget, Gtk.EntryIconPosition.SECONDARY
-            ),
-            1,
-        )
-        sep = Gtk.SeparatorMenuItem()
-        sep.show()
-        widget.insert(sep, 2)
+    def showhidepass(self,
+                     action: Optional[Gio.Action] = None,
+                     param: Optional[GLib.Variant] = None) -> None:
+        newvis = not self.passentry.get_visibility()
+        self.passentry.set_visibility(newvis)
+        label = "Hide password" if newvis else "Show password"
+        self.passentry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, label)
+        self.passmenu.remove(1)
+        self.passmenu.insert(1, label, 'win.showpass')
 
-    def refreshpass(
-        self, widget: Optional[Gtk.Widget] = None, event: Optional[Gdk.Event] = None
-    ) -> None:
+    def refreshpass(self, action: Optional[Gio.Action] = None, param: Optional[GLib.Variant] = None) -> None:
         pwsize = os.environ.get("IMPASS_PASSWORD", DEFAULT_NEW_PASSWORD_OCTETS)
         try:
             pwsize = int(pwsize)
