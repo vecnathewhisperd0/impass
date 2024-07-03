@@ -16,6 +16,32 @@ from gi.repository import Gio  # noqa: E402
 
 ############################################################
 
+class ImpassContext(GObject.Object):
+    ctx = GObject.Property(type=str)
+    def __init__(self, ctx: str, date: str) -> None:
+        super().__init__()
+        self.ctx = ctx
+        self.date = date
+
+class ImpassListItemFactory(Gtk.SignalListItemFactory):
+    def __init__(self, gui: Gui, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gui = gui
+        self.connect("setup", ImpassListItemFactory.setup_hook)
+        self.connect("bind", ImpassListItemFactory.bind_hook)
+
+    def setup_hook(self, item: Gtk.ListItem) -> None:
+        label = Gtk.Label(halign=Gtk.Align.START,
+                         hexpand=True)
+        item.set_child(label)
+
+    def bind_hook(self, item: Gtk.ListItem) -> None:
+        label: Gtk.Label = item.get_child()
+        ctx: ImpassContext = item.get_item()
+        label.set_label(ctx.ctx)
+        label.set_tooltip_text(ctx.date)
+
+
 class Gui:
     """Impass GTK-based query UI."""
 
@@ -89,16 +115,6 @@ class Gui:
         popover.completion contents {
           border-radius: 0px;
           padding: 1px;
-        }
-        popover.completion contents button {
-          padding: 0px;
-          min-height: 1em;
-          min-width: 20em;
-          border-radius: 0px;
-        }
-        popover.completion contents button:focus {
-          background: @theme_selected_bg_color;
-          color: @selected_fg_color;
         }
         ''')
 
@@ -182,8 +198,6 @@ class Gui:
                                       has_arrow=False,
                                       css_classes=['completion','background'],
                                       autohide=False)
-        self.completionbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.completion.set_child(self.completionbox)
         self.simplebox.append(self.completion)
 
         delaction = self.add_action("delete", self.deleteclicked)
@@ -235,6 +249,22 @@ class Gui:
         self.passentry.connect("icon-press", self.passentry_icon_clicked)
         self.createbtn.connect("clicked", self.customcreateclicked)
 
+        self.ctxlist = Gio.ListStore()
+        for ctx in self.db:
+            self.ctxlist.append(ImpassContext(ctx, self.db[ctx]['date']))
+
+        self.completionfilter = Gtk.CustomFilter()
+        self.completionfilter.set_filter_func(lambda x: True)
+        self.selector = Gtk.SingleSelection()
+        self.completion_filter_model = Gtk.FilterListModel(model=self.ctxlist, filter=self.completionfilter)
+        self.selector.set_model(self.completion_filter_model)
+        self.completionlist = Gtk.ListView(model=self.selector,
+                                           factory=ImpassListItemFactory(self),
+                                           single_click_activate=True)
+        self.completion.set_child(self.completionlist)
+        self.completionlist.connect('activate', lambda listview, pos:
+                                    self.completion_clicked(listview.get_model().get_item(pos).ctx)) 
+
         if self.query:
             self.entry.set_text(self.query)
         self.set_state("Enter context for desired password:")
@@ -265,16 +295,8 @@ class Gui:
         if len(matches) == 0:
             self.completion.set_visible(False)
         else:
-            m:Optional[Gtk.Widget] = self.completionbox.get_first_child()
-            while m is not None:
-                self.completionbox.remove(m)
-                m = self.completionbox.get_first_child()
-            for m in matches:
-                b = Gtk.Button(label=m,
-                               halign=Gtk.Align.START)
-                b.get_first_child().set_halign(Gtk.Align.START)
-                self.completionbox.append(b)
-                b.connect("clicked", lambda x: self.completion_clicked(x.get_label()))
+            lsctx = sctx.lower()
+            self.completionfilter.set_filter_func(lambda x: lsctx in x.ctx.lower())
             self.completion.set_visible(True)
 
         menu = Gio.Menu()
