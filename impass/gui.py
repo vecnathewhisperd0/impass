@@ -23,6 +23,14 @@ class ImpassContext(GObject.Object):
         self.ctx = ctx
         self.date = date
 
+class ImpassContextSorter(Gtk.Sorter):
+    def do_compare(self, a: ImpassContext, b: ImpassContext) -> Gtk.Ordering:
+        if a.ctx < b.ctx:
+            return Gtk.Ordering.SMALLER
+        elif a.ctx == b.ctx:
+            return Gtk.Ordering.EQUAL
+        return Gtk.Ordering.LARGER
+
 class ImpassListItemFactory(Gtk.SignalListItemFactory):
     def __init__(self, gui: Gui, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -257,7 +265,9 @@ class Gui:
         self.completionfilter.set_filter_func(lambda x: True)
         self.selector = Gtk.SingleSelection()
         self.completion_filter_model = Gtk.FilterListModel(model=self.ctxlist, filter=self.completionfilter)
-        self.selector.set_model(self.completion_filter_model)
+        self.sorted_model = Gtk.SortListModel(model=self.completion_filter_model,
+                                              sorter=ImpassContextSorter())
+        self.selector.set_model(self.sorted_model)
         self.completionlist = Gtk.ListView(model=self.selector,
                                            factory=ImpassListItemFactory(self),
                                            single_click_activate=True)
