@@ -1,8 +1,6 @@
 # Ensure that sway shows the impass popup dialog appropriately
 
-for_window [app_id="^impass$" ] {
-   title_format "🔐%title"
+for_window [app_id="^net\.cmrg\.impass$" ] {
    floating enable
    sticky enable
-   border normal 0
 }

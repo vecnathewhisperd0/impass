@@ -68,7 +68,7 @@ class Gui:
 
     def on_activate(self, app: Gtk.Application) -> None:
         self.window = Gtk.ApplicationWindow(application=app)
-        self.window.set_title('🔒impass')
+        self.window.set_title('🔒Impass Password Manager')
 
         self.frame = Gtk.Box(name="frame",
                              orientation=Gtk.Orientation.VERTICAL)
