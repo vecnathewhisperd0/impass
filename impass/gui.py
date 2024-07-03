@@ -190,6 +190,8 @@ class Gui:
         customaction = self.add_action("createcustom", self.customclicked)
         refreshpassaction = self.add_action("refreshpass", self.refreshpass)
         showpassaction = self.add_action("showpass", self.showhidepass)
+        simpleaction = self.add_action("simple", self.simpleclicked)
+        createaction = self.add_action("create", self.create)
 
         emitmenu = Gio.Menu()
         emitmenu.insert(0, 'Delete', 'win.delete')
@@ -325,7 +327,8 @@ class Gui:
         sep.show()
         widget.insert(sep, pos)
 
-    def simpleclicked(self, widget: Gtk.Widget) -> None:
+    def simpleclicked(self, action: Optional[Gio.Action] = None,
+                      param: Optional[GLib.Variant] = None) -> None:
         sctx = self.entry.get_text().strip()
         if sctx in self.db:
             self.selected = self.db[sctx]
@@ -348,13 +351,15 @@ class Gui:
             else:
                 self.app.quit()
 
-    def create(self, widget: Gtk.Widget, data: Optional[Any] = None) -> None:
+    def create(self, action: Optional[Gio.Action] = None,
+               param: Optional[Glib.Variant] = None) -> None:
         sctx = self.entry.get_text().strip()
         self.selected = self.db.add(sctx)
         self.db.save()
         self.window.close()
 
-    def deleteclicked(self, action: Gio.Action, param: GLib.Variant) -> None:
+    def deleteclicked(self, action: Optional[Gio.Action] = None,
+                      param: Optional[GLib.Variant] = None) -> None:
         sctx = self.entry.get_text().strip()
         confirmation = Gtk.MessageDialog(
             transient_for=self.window,
