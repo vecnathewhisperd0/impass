@@ -227,8 +227,6 @@ class Gui:
         self.window.connect("destroy", self.destroy)
         self.entry.connect("activate", self.simpleclicked)
         self.entry.connect("changed", self.update_simple_context_entry)
-        # FIXME: add alternate context menu items
-        #self.entry.connect("populate-popup", self.simple_ctx_popup)
         self.simplebtn.connect("clicked", self.simpleclicked)
         self.ctxentry.connect("changed", self.update_ctxentry)
         self.ctxentry.connect("activate", self.customcreateclicked)
@@ -274,58 +272,23 @@ class Gui:
                 b.connect("clicked", lambda x: self.entry.set_text(x.get_label()))
             self.completion.set_visible(True)
 
+        menu = Gio.Menu()
         if sctx in self.db:
             self.simplebtn.set_label("Emit")
             self.simplemenubtn.set_popover(self.emitmenu)
+            menu.insert(0, f"Emit password for '{sctx}'", 'win.simple')
+            menu.insert(1, f"Delete password for '{sctx}'", 'win.delete')
         elif sctx is None or sctx == "":
             self.simplebtn.set_label("Create…")
             self.simplemenubtn.set_popover(None)
+            menu.insert(0, 'Create custom password…', 'win.createcustom')
         else:
             self.simplebtn.set_label("Create")
             self.simplemenubtn.set_popover(self.createmenu)
+            menu.insert(0, f"Create and emit password for '{sctx}'", 'win.create')
+            menu.insert(1, f"Create custom password for '{sctx}'", 'win.createcustom')
+        self.entry.set_extra_menu(menu)
 
-
-    def add_to_menu(
-        self,
-        menu: Gtk.Widget,
-        name: str,
-        onclicked: Callable[[Gui], None],
-        position: int,
-    ) -> None:
-        x = Gtk.MenuItem(label=name)
-        x.connect("activate", onclicked)
-        x.show()
-        menu.insert(x, position)
-
-    def simple_ctx_popup(
-        self, entry: Gtk.Widget, widget: Gtk.Widget, data: Optional[Any] = None
-    ) -> None:
-        sctx = self.entry.get_text().strip()
-        if sctx in self.db:
-            self.add_to_menu(
-                widget, "Emit password for '" + sctx + "'", self.simpleclicked, 0
-            )
-            self.add_to_menu(
-                widget, "Delete password for '" + sctx + "'", self.deleteclicked, 1
-            )
-            pos = 2
-        elif sctx is None or sctx == "":
-            self.add_to_menu(widget, "Create custom password…", self.customclicked, 0)
-            pos = 1
-        else:
-            self.add_to_menu(
-                widget, "Create and emit password for '" + sctx + "'", self.create, 0
-            )
-            self.add_to_menu(
-                widget,
-                "Create custom password for '" + sctx + "'…",
-                self.customclicked,
-                1,
-            )
-            pos = 2
-        sep = Gtk.SeparatorMenuItem()
-        sep.show()
-        widget.insert(sep, pos)
 
     def simpleclicked(self, action: Optional[Gio.Action] = None,
                       param: Optional[GLib.Variant] = None) -> None:
