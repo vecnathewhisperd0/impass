@@ -340,7 +340,8 @@ class Gui:
         else:
             self.create(None)
 
-    def keypress(self, keycontroller: Gtk.EventControllerKey, key: int, code: int, mods: Gdk.ModifierType) -> None:
+    def keypress(self, keycontroller: Gtk.EventControllerKey,
+                 key: int, code: int, mods: Gdk.ModifierType) -> None:
         if key == Gdk.KEY_Escape:
             if self.completion.get_visible():
                 self.completion.set_visible(False)
