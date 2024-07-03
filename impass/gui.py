@@ -250,6 +250,11 @@ class Gui:
     def set_state(self, state: str) -> None:
         self.description.set_label(state)
 
+    def completion_clicked(self, label: str) -> None:
+        self.entry.set_text(label)
+        self.completion.set_visible(False)
+        self.entry.grab_focus()
+
     def update_simple_context_entry(self, widget: Optional[Gtk.Widget]) -> None:
         sctx = self.entry.get_text().strip()
         max_matches = 40
@@ -269,7 +274,7 @@ class Gui:
                                halign=Gtk.Align.START)
                 b.get_first_child().set_halign(Gtk.Align.START)
                 self.completionbox.append(b)
-                b.connect("clicked", lambda x: self.entry.set_text(x.get_label()))
+                b.connect("clicked", lambda x: self.completion_clicked(x.get_label()))
             self.completion.set_visible(True)
 
         menu = Gio.Menu()
