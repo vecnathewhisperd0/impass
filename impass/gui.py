@@ -186,9 +186,11 @@ class Gui:
         self.completion.set_child(self.completionbox)
         self.simplebox.append(self.completion)
 
-        delaction = Gio.SimpleAction.new("delete", None)
-        delaction.connect("activate", self.deleteclicked)
-        self.window.add_action(delaction)
+        delaction = self.add_action("delete", self.deleteclicked)
+        customaction = self.add_action("createcustom", self.customclicked)
+        refreshpassaction = self.add_action("refreshpass", self.refreshpass)
+        showpassaction = self.add_action("showpass", self.showhidepass)
+
         emitmenu = Gio.Menu()
         emitmenu.insert(0, 'Delete', 'win.delete')
         self.emitmenu = Gtk.PopoverMenu(name="emitmenu",
@@ -199,9 +201,6 @@ class Gui:
                                         position=Gtk.PositionType.BOTTOM)
 
         createmenu = Gio.Menu()
-        customaction = Gio.SimpleAction.new("createcustom", None)
-        customaction.connect("activate", self.customclicked)
-        self.window.add_action(customaction)
         createmenu.insert(0, 'Create custom…', 'win.createcustom')
         self.createmenu = Gtk.PopoverMenu(name="createmenu",
                                           menu_model=createmenu,
@@ -211,13 +210,6 @@ class Gui:
                                           position=Gtk.PositionType.BOTTOM)
         
         self.warning.set_visible(not self.db.sigvalid)
-
-        refreshpassaction = Gio.SimpleAction.new("refreshpass", None)
-        refreshpassaction.connect("activate", self.refreshpass)
-        self.window.add_action(refreshpassaction)
-        showpassaction = Gio.SimpleAction.new("showpass", None)
-        showpassaction.connect("activate", self.showhidepass)
-        self.window.add_action(showpassaction)
 
         self.passmenu = Gio.Menu()
         self.passmenu.insert(0, '_Generate a new password', 'win.refreshpass')
@@ -248,6 +240,12 @@ class Gui:
         self.set_state("Enter context for desired password:")
         self.update_simple_context_entry(None)
         self.window.present()
+
+    def add_action(self, label: str, func: Callable) -> Gio.Action:
+        ret = Gio.SimpleAction.new(label, None)
+        ret.connect("activate", func)
+        self.window.add_action(ret)
+        return ret
 
     def set_state(self, state: str) -> None:
         self.description.set_label(state)
