@@ -348,7 +348,9 @@ class Gui:
         cancel.connect('clicked', lambda x: confirmation.close())
         confirmation.present()
 
-    def customclicked(self, action: Gio.Action, param: GLib.Variant) -> None:
+    def customclicked(self,
+                      action: Optional[Gio.Action] = None,
+                      param: Optional[GLib.Variant] = None) -> None:
         if self.ctxentry is None or self.entry is None:
             raise Exception("Gui is not initialized")
         self.simplebox.set_visible(False)
@@ -424,7 +426,9 @@ class Gui:
         self.passmenu.remove(1)
         self.passmenu.insert(1, f'_{label}', 'win.showpass')
 
-    def refreshpass(self, action: Optional[Gio.Action] = None, param: Optional[GLib.Variant] = None) -> None:
+    def refreshpass(self,
+                    action: Optional[Gio.Action] = None,
+                    param: Optional[GLib.Variant] = None) -> None:
         pwsize = os.environ.get("IMPASS_PASSWORD", DEFAULT_NEW_PASSWORD_OCTETS)
         try:
             pwsize = int(pwsize)
