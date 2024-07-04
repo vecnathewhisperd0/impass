@@ -1,6 +1,8 @@
 # Ensure that sway shows the impass popup dialog appropriately
-
 for_window [app_id="^net\.cmrg\.impass$" ] {
    floating enable
    sticky enable
 }
+
+# Add a default keybinding to launch the GUI
+bindsym $mod+p exec exec impass gui
