@@ -12,6 +12,7 @@ from gi.repository import Gtk  # type: ignore # noqa: E402
 from gi.repository import GObject  # noqa: E402
 from gi.repository import Gdk  # noqa: E402
 from gi.repository import Gio  # noqa: E402
+from gi.repository import GLib  # noqa: E402
 
 
 ############################################################
@@ -32,8 +33,8 @@ class ImpassContextSorter(Gtk.Sorter):
         return Gtk.Ordering.LARGER
 
 class ImpassListItemFactory(Gtk.SignalListItemFactory):
-    def __init__(self, gui: Gui, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, gui: Gui) -> None:
+        super().__init__()
         self.gui = gui
         self.connect("setup", ImpassListItemFactory.setup_hook)
         self.connect("bind", ImpassListItemFactory.bind_hook)
@@ -280,7 +281,7 @@ class Gui:
         self.update_simple_context_entry(None)
         self.window.present()
 
-    def add_action(self, label: str, func: Callable) -> Gio.Action:
+    def add_action(self, label: str, func: Callable[[Optional[Gio.Action],Optional[GLib.Variant]],None]) -> Gio.Action:
         ret = Gio.SimpleAction.new(label, None)
         ret.connect("activate", func)
         self.window.add_action(ret)
@@ -351,7 +352,7 @@ class Gui:
                 self.app.quit()
 
     def create(self, action: Optional[Gio.Action] = None,
-               param: Optional[Glib.Variant] = None) -> None:
+               param: Optional[GLib.Variant] = None) -> None:
         sctx = self.entry.get_text().strip()
         self.selected = self.db.add(sctx)
         self.db.save()
