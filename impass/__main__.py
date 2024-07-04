@@ -390,6 +390,31 @@ def dump(args: Optional[List[str]]) -> argparse.ArgumentParser:
     return parser
 
 
+def get(args: Optional[List[str]]) -> argparse.ArgumentParser:
+    """Print password matching context to stdout.
+
+    """
+    parser = argparse.ArgumentParser(
+        prog=PROG+' get',
+        description=get.__doc__,
+    )
+    parser.add_argument(
+        "context",
+        nargs="?",
+        help="exact context match, ':' for prompt, or '-' for stdin",
+    )
+    if args is None:
+        return parser
+    argsns = parser.parse_args(args)
+    keyid = get_keyid()
+    db = open_db(keyid)
+    context = retrieve_context(argsns.context, db=db)
+    if context not in db:
+        error(2, "Context '{}' not found".format(context))
+    print(db[context]['password'])
+    return parser
+
+
 def gui(
     args: Optional[List[str]],
     method: Optional[str] = os.getenv("IMPASS_XPASTE", None)
@@ -703,6 +728,7 @@ CMDS: collections.OrderedDict[
         ("replace", replace),
         ("update", update),
         ("dump", dump),
+        ('get', get),
         ("gui", gui),
         ("remove", remove),
         ("help", print_help),
