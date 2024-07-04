@@ -231,7 +231,10 @@ def add(args: Optional[List[str]]) -> argparse.ArgumentParser:
     thrown.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG + " add", description=add.__doc__)
+    parser = argparse.ArgumentParser(
+        prog=PROG + " add",
+        description=add.__doc__,
+    )
     parser.add_argument(
         "context",
         nargs="?",
@@ -273,7 +276,8 @@ def replace(args: Optional[List[str]]) -> argparse.ArgumentParser:
 
     """
     parser = argparse.ArgumentParser(
-        prog=PROG + " replace", description=replace.__doc__
+        prog=PROG + " replace",
+        description=replace.__doc__,
     )
     parser.add_argument(
         "context",
@@ -315,14 +319,19 @@ def update(args: Optional[List[str]]) -> argparse.ArgumentParser:
     context.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG + " update", description=update.__doc__)
+    parser = argparse.ArgumentParser(
+        prog=PROG + " update",
+        description=update.__doc__,
+    )
     parser.add_argument(
         "old_context",
         nargs="?",
         help="existing database context, ':' for prompt, or '-' for stdin",
     )
     parser.add_argument(
-        "new_context", nargs="?", help="new database context or ':' for prompt"
+        "new_context",
+        nargs="?",
+        help="new database context or ':' for prompt",
     )
     if args is None:
         return parser
@@ -360,7 +369,11 @@ def dump(args: Optional[List[str]]) -> argparse.ArgumentParser:
 
     """
     parser = argparse.ArgumentParser(prog=PROG + " dump", description=dump.__doc__)
-    parser.add_argument("string", nargs="?", help="substring match for contexts")
+    parser.add_argument(
+        "string",
+        nargs="?",
+        help="substring match for contexts",
+    )
     if args is None:
         return parser
     argsns = parser.parse_args(args)
@@ -378,7 +391,8 @@ def dump(args: Optional[List[str]]) -> argparse.ArgumentParser:
 
 
 def gui(
-    args: Optional[List[str]], method: Optional[str] = os.getenv("IMPASS_XPASTE", None)
+    args: Optional[List[str]],
+    method: Optional[str] = os.getenv("IMPASS_XPASTE", None)
 ) -> argparse.ArgumentParser:
     """Launch minimal GUI.
 
@@ -397,8 +411,15 @@ def gui(
     accessible through the GUI.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG + " gui", description=gui.__doc__)
-    parser.add_argument("string", nargs="?", help="substring match for contexts")
+    parser = argparse.ArgumentParser(
+        prog=PROG + " gui",
+        description=gui.__doc__,
+    )
+    parser.add_argument(
+        "string",
+        nargs="?",
+        help="substring match for contexts",
+    )
     if args is None:
         return parser
     argsns = parser.parse_args(args)
@@ -484,7 +505,10 @@ def remove(args: Optional[List[str]]) -> argparse.ArgumentParser:
     will be thrown.
 
     """
-    parser = argparse.ArgumentParser(prog=PROG + " remove", description=remove.__doc__)
+    parser = argparse.ArgumentParser(
+        prog=PROG + " remove",
+        description=remove.__doc__,
+    )
     parser.add_argument(
         "context",
         nargs="?",
@@ -521,7 +545,8 @@ def remove(args: Optional[List[str]]) -> argparse.ArgumentParser:
 def print_help(args: Optional[List[str]]) -> argparse.ArgumentParser:
     """Full usage or command help (also '-h' after command)."""
     parser = argparse.ArgumentParser(
-        prog=PROG + " help", description=print_help.__doc__
+        prog=PROG + " help",
+        description=print_help.__doc__,
     )
     if args is None:
         return parser
@@ -541,7 +566,8 @@ def print_help(args: Optional[List[str]]) -> argparse.ArgumentParser:
 def version(args: Optional[List[str]]) -> argparse.ArgumentParser:
     """Print version."""
     parser = argparse.ArgumentParser(
-        prog=PROG + " version", description=version.__doc__
+        prog=PROG + " version",
+        description=version.__doc__
     )
     if args is None:
         return parser
@@ -683,6 +709,7 @@ CMDS: collections.OrderedDict[
         ("version", version),
     ]
 )
+
 ALIAS = {
     "--version": "version",
     "--help": "help",
