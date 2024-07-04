@@ -262,7 +262,6 @@ class Gui:
             self.ctxlist.append(ImpassContext(ctx, self.db[ctx]['date']))
 
         self.completionfilter = Gtk.CustomFilter()
-        self.completionfilter.set_filter_func(lambda x: True)
         self.selector = Gtk.SingleSelection()
         self.completion_filter_model = Gtk.FilterListModel(model=self.ctxlist, filter=self.completionfilter)
         self.sorted_model = Gtk.SortListModel(model=self.completion_filter_model,
