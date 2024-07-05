@@ -18,7 +18,7 @@ from gi.repository import GLib  # noqa: E402
 ############################################################
 
 
-class ImpassContext(GObject.Object):
+class ImpassContext(GObject.Object):  # type: ignore[misc]
     ctx = GObject.Property(type=str)
 
     def __init__(self, ctx: str, date: str) -> None:
@@ -27,7 +27,7 @@ class ImpassContext(GObject.Object):
         self.date = date
 
 
-class ImpassContextSorter(Gtk.Sorter):
+class ImpassContextSorter(Gtk.Sorter):  # type: ignore[misc]
     def do_compare(self, a: ImpassContext, b: ImpassContext) -> Gtk.Ordering:
         if a.ctx < b.ctx:
             return Gtk.Ordering.SMALLER
@@ -36,7 +36,7 @@ class ImpassContextSorter(Gtk.Sorter):
         return Gtk.Ordering.LARGER
 
 
-class ImpassListItemFactory(Gtk.SignalListItemFactory):
+class ImpassListItemFactory(Gtk.SignalListItemFactory):  # type: ignore[misc]
     def __init__(self, gui: Gui) -> None:
         super().__init__()
         self.gui = gui
