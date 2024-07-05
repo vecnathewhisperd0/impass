@@ -71,6 +71,17 @@ Recommends (for sway integration):
   For sway integration, including the contents of the file swayconfig
   in ~/.config/sway/config is advised.
 
+### Conventions
+
+We're trying to keep the source code reasonably well-structured, using [black](https://black.readthedocs.io/) and [mypy](https://mypy.readthedocs.io/).
+
+Before you commit, you might try running:
+
+    black impass
+    mypy --strict impass
+
+to make sure you are not introducing new concerns.
+
 Debian
 ------
 
