@@ -391,11 +391,9 @@ def dump(args: Optional[List[str]]) -> argparse.ArgumentParser:
 
 
 def get(args: Optional[List[str]]) -> argparse.ArgumentParser:
-    """Print password matching context to stdout.
-
-    """
+    """Print password matching context to stdout."""
     parser = argparse.ArgumentParser(
-        prog=PROG+' get',
+        prog=PROG + " get",
         description=get.__doc__,
     )
     parser.add_argument(
@@ -411,7 +409,7 @@ def get(args: Optional[List[str]]) -> argparse.ArgumentParser:
     context = retrieve_context(argsns.context, db=db)
     if context not in db:
         error(2, "Context '{}' not found".format(context))
-    print(db[context]['password'])
+    print(db[context]["password"])
     return parser
 
 
@@ -728,7 +726,7 @@ CMDS: collections.OrderedDict[
         ("replace", replace),
         ("update", update),
         ("dump", dump),
-        ('get', get),
+        ("get", get),
         ("gui", gui),
         ("remove", remove),
         ("help", print_help),
