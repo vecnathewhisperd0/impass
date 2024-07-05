@@ -17,12 +17,15 @@ from gi.repository import GLib  # noqa: E402
 
 ############################################################
 
+
 class ImpassContext(GObject.Object):
     ctx = GObject.Property(type=str)
+
     def __init__(self, ctx: str, date: str) -> None:
         super().__init__()
         self.ctx = ctx
         self.date = date
+
 
 class ImpassContextSorter(Gtk.Sorter):
     def do_compare(self, a: ImpassContext, b: ImpassContext) -> Gtk.Ordering:
@@ -32,6 +35,7 @@ class ImpassContextSorter(Gtk.Sorter):
             return Gtk.Ordering.EQUAL
         return Gtk.Ordering.LARGER
 
+
 class ImpassListItemFactory(Gtk.SignalListItemFactory):
     def __init__(self, gui: Gui) -> None:
         super().__init__()
@@ -40,8 +44,7 @@ class ImpassListItemFactory(Gtk.SignalListItemFactory):
         self.connect("bind", ImpassListItemFactory.bind_hook)
 
     def setup_hook(self, item: Gtk.ListItem) -> None:
-        label = Gtk.Label(halign=Gtk.Align.START,
-                         hexpand=True)
+        label = Gtk.Label(halign=Gtk.Align.START, hexpand=True)
         item.set_child(label)
 
     def bind_hook(self, item: Gtk.ListItem) -> None:
@@ -98,19 +101,19 @@ class Gui:
                 self.selected = r[list(r.keys())[0]]
                 return
 
-        self.app = Gtk.Application(application_id='net.cmrg.impass')
-        self.app.connect('activate', self.on_activate)
+        self.app = Gtk.Application(application_id="net.cmrg.impass")
+        self.app.connect("activate", self.on_activate)
 
     def on_activate(self, app: Gtk.Application) -> None:
         self.window = Gtk.ApplicationWindow(application=app)
-        self.window.set_title('🔒Impass Password Manager')
+        self.window.set_title("🔒Impass Password Manager")
 
-        self.frame = Gtk.Box(name="frame",
-                             orientation=Gtk.Orientation.VERTICAL)
+        self.frame = Gtk.Box(name="frame", orientation=Gtk.Orientation.VERTICAL)
         self.window.set_child(self.frame)
 
         self.css = Gtk.CssProvider()
-        self.css.load_from_string('''
+        self.css.load_from_string(
+            """
         label.warning {
           color: red;
         }
@@ -125,88 +128,101 @@ class Gui:
           border-radius: 0px;
           padding: 1px;
         }
-        ''')
+        """
+        )
 
-        self.warning = Gtk.Box(name="warning",
-                               orientation=Gtk.Orientation.VERTICAL,
-                               visible=False)
+        self.warning = Gtk.Box(
+            name="warning",
+            orientation=Gtk.Orientation.VERTICAL,
+            visible=False,
+        )
         self.frame.append(self.warning)
-        self.notification = Gtk.Label(name="notification",
-                                      css_classes=["warning"],
-                                      label='⚠ could not validate signature on db file!')
+        self.notification = Gtk.Label(
+            name="notification",
+            css_classes=["warning"],
+            label="⚠ could not validate signature on db file!",
+        )
         self.warning.append(self.notification)
         self.warning.append(Gtk.Separator())
 
-
-        self.description = Gtk.Label(name="description",
-                                     label="Global state of impass gui")
+        self.description = Gtk.Label(
+            name="description",
+            label="Global state of impass gui",
+        )
         self.frame.append(self.description)
         self.simplebox = Gtk.Box(name="simplebox")
         self.frame.append(self.simplebox)
-        self.entry = Gtk.Entry(name="simplectxentry",
-                               hexpand=True,
-                               width_chars=50,
-                               placeholder_text="Enter context…")
+        self.entry = Gtk.Entry(
+            name="simplectxentry",
+            hexpand=True,
+            width_chars=50,
+            placeholder_text="Enter context…",
+        )
         self.simplebox.append(self.entry)
-        self.simplebtn = Gtk.Button(name="simplebtn",
-                                    label="Emit")
+        self.simplebtn = Gtk.Button(name="simplebtn", label="Emit")
         self.simplebox.append(self.simplebtn)
         self.simplemenubtn = Gtk.MenuButton(name="simplemenubtn")
         self.simplebox.append(self.simplemenubtn)
-        
-        self.ctxbox = Gtk.Box(name="ctxbox",
-                              visible=False)
+
+        self.ctxbox = Gtk.Box(name="ctxbox", visible=False)
         self.frame.append(self.ctxbox)
-        self.ctxlabel = Gtk.Label(name="ctxlabel",
-                                  label="Context:")
+        self.ctxlabel = Gtk.Label(name="ctxlabel", label="Context:")
         self.ctxbox.append(self.ctxlabel)
-        self.ctxbox2 = Gtk.Box(name="ctxbox2",
-                               orientation=Gtk.Orientation.VERTICAL)
+        self.ctxbox2 = Gtk.Box(name="ctxbox2", orientation=Gtk.Orientation.VERTICAL)
         self.ctxbox.append(self.ctxbox2)
-        self.ctxentry = Gtk.Entry(name="ctxentry",
-                                  hexpand=True,
-                                  placeholder_text="Enter context…")
+        self.ctxentry = Gtk.Entry(
+            name="ctxentry",
+            hexpand=True,
+            placeholder_text="Enter context…",
+        )
         self.ctxbox2.append(self.ctxentry)
-        self.ctxwarninglabel = Gtk.Label(name="ctxwarninglabel",
-                                         visible=False,
-                                         css_classes=['warning'],
-                                         label="⚠ This context already exists!")
+        self.ctxwarninglabel = Gtk.Label(
+            name="ctxwarninglabel",
+            visible=False,
+            css_classes=["warning"],
+            label="⚠ This context already exists!",
+        )
         self.ctxbox2.append(self.ctxwarninglabel)
 
-        self.passbox = Gtk.Box(name="passbox",
-                               visible=False)
+        self.passbox = Gtk.Box(name="passbox", visible=False)
         self.frame.append(self.passbox)
-        self.passlabel = Gtk.Label(name="passlabel",
-                                   label="Password:")
+        self.passlabel = Gtk.Label(name="passlabel", label="Password:")
         self.passbox.append(self.passlabel)
-        self.passbox2 = Gtk.Box(name="passbox2",
-                                orientation=Gtk.Orientation.VERTICAL)
+        self.passbox2 = Gtk.Box(name="passbox2", orientation=Gtk.Orientation.VERTICAL)
         self.passbox.append(self.passbox2)
-        self.passentry = Gtk.Entry(name="passentry",
-                                   hexpand=True,
-                                   visibility=False,
-                                   primary_icon_name="view-refresh",
-                                   secondary_icon_name="edit-find",
-                                   primary_icon_tooltip_text="generate a new password",
-                                   secondary_icon_tooltip_text="show_password",
-                                   placeholder_text="You must enter a password",
-                                   input_purpose=Gtk.InputPurpose.PASSWORD)
+        self.passentry = Gtk.Entry(
+            name="passentry",
+            hexpand=True,
+            visibility=False,
+            primary_icon_name="view-refresh",
+            secondary_icon_name="edit-find",
+            primary_icon_tooltip_text="generate a new password",
+            secondary_icon_tooltip_text="show_password",
+            placeholder_text="You must enter a password",
+            input_purpose=Gtk.InputPurpose.PASSWORD,
+        )
         self.passbox2.append(self.passentry)
-        self.passdescription = Gtk.Label(name="passdescription",
-                                         css_classes=['info'],
-                                         label="%d characters, %d lowercase, etc…")
+        self.passdescription = Gtk.Label(
+            name="passdescription",
+            css_classes=["info"],
+            label="%d characters, %d lowercase, etc…",
+        )
         self.passbox2.append(self.passdescription)
-        self.createbtn = Gtk.Button(name="createbtn",
-                                    label="Create and emit",
-                                    receives_default=True)
+        self.createbtn = Gtk.Button(
+            name="createbtn",
+            label="Create and emit",
+            receives_default=True,
+        )
         self.passbox.append(self.createbtn)
 
-        self.completion = Gtk.Popover(name="completion",
-                                      position=Gtk.PositionType.BOTTOM,
-                                      halign=Gtk.Align.START,
-                                      has_arrow=False,
-                                      css_classes=['completion','background'],
-                                      autohide=False)
+        self.completion = Gtk.Popover(
+            name="completion",
+            position=Gtk.PositionType.BOTTOM,
+            halign=Gtk.Align.START,
+            has_arrow=False,
+            css_classes=["completion", "background"],
+            autohide=False,
+        )
         self.simplebox.append(self.completion)
 
         delaction = self.add_action("delete", self.deleteclicked)
@@ -217,35 +233,42 @@ class Gui:
         createaction = self.add_action("create", self.create)
 
         emitmenu = Gio.Menu()
-        emitmenu.insert(0, 'Delete', 'win.delete')
-        self.emitmenu = Gtk.PopoverMenu(name="emitmenu",
-                                        menu_model=emitmenu,
-                                        has_arrow=False,
-                                        halign=Gtk.Align.END,
-                                        css_classes=["nondefaultaction", "background"],
-                                        position=Gtk.PositionType.BOTTOM)
+        emitmenu.insert(0, "Delete", "win.delete")
+        self.emitmenu = Gtk.PopoverMenu(
+            name="emitmenu",
+            menu_model=emitmenu,
+            has_arrow=False,
+            halign=Gtk.Align.END,
+            css_classes=["nondefaultaction", "background"],
+            position=Gtk.PositionType.BOTTOM,
+        )
 
         createmenu = Gio.Menu()
-        createmenu.insert(0, 'Create custom…', 'win.createcustom')
-        self.createmenu = Gtk.PopoverMenu(name="createmenu",
-                                          menu_model=createmenu,
-                                          has_arrow=False,
-                                          halign=Gtk.Align.END,
-                                          css_classes=["nondefaultaction", "background"],
-                                          position=Gtk.PositionType.BOTTOM)
-        
+        createmenu.insert(0, "Create custom…", "win.createcustom")
+        self.createmenu = Gtk.PopoverMenu(
+            name="createmenu",
+            menu_model=createmenu,
+            has_arrow=False,
+            halign=Gtk.Align.END,
+            css_classes=["nondefaultaction", "background"],
+            position=Gtk.PositionType.BOTTOM,
+        )
+
         self.warning.set_visible(not self.db.sigvalid)
 
         self.passmenu = Gio.Menu()
-        self.passmenu.insert(0, '_Generate a new password', 'win.refreshpass')
-        self.passmenu.insert(1, '_Show password', 'win.showpass')
+        self.passmenu.insert(0, "_Generate a new password", "win.refreshpass")
+        self.passmenu.insert(1, "_Show password", "win.showpass")
         self.passentry.set_extra_menu(self.passmenu)
 
         self.eck = Gtk.EventControllerKey()
-        self.eck.connect('key-pressed', self.keypress)
+        self.eck.connect("key-pressed", self.keypress)
         self.window.add_controller(self.eck)
-        Gtk.StyleContext().add_provider_for_display(self.window.get_display(), self.css,
-                                                    Gtk.STYLE_PROVIDER_PRIORITY_USER)
+        Gtk.StyleContext().add_provider_for_display(
+            self.window.get_display(),
+            self.css,
+            Gtk.STYLE_PROVIDER_PRIORITY_USER,
+        )
 
         self.window.connect("destroy", self.destroy)
         self.entry.connect("activate", self.simpleclicked)
@@ -260,20 +283,31 @@ class Gui:
 
         self.ctxlist = Gio.ListStore()
         for ctx in self.db:
-            self.ctxlist.append(ImpassContext(ctx, self.db[ctx]['date']))
+            self.ctxlist.append(ImpassContext(ctx, self.db[ctx]["date"]))
 
         self.completionfilter = Gtk.CustomFilter()
         self.selector = Gtk.SingleSelection()
-        self.completion_filter_model = Gtk.FilterListModel(model=self.ctxlist, filter=self.completionfilter)
-        self.sorted_model = Gtk.SortListModel(model=self.completion_filter_model,
-                                              sorter=ImpassContextSorter())
+        self.completion_filter_model = Gtk.FilterListModel(
+            model=self.ctxlist,
+            filter=self.completionfilter,
+        )
+        self.sorted_model = Gtk.SortListModel(
+            model=self.completion_filter_model,
+            sorter=ImpassContextSorter(),
+        )
         self.selector.set_model(self.sorted_model)
-        self.completionlist = Gtk.ListView(model=self.selector,
-                                           factory=ImpassListItemFactory(self),
-                                           single_click_activate=True)
+        self.completionlist = Gtk.ListView(
+            model=self.selector,
+            factory=ImpassListItemFactory(self),
+            single_click_activate=True,
+        )
         self.completion.set_child(self.completionlist)
-        self.completionlist.connect('activate', lambda listview, pos:
-                                    self.completion_clicked(listview.get_model().get_item(pos).ctx)) 
+        self.completionlist.connect(
+            "activate",
+            lambda listview, pos: self.completion_clicked(
+                listview.get_model().get_item(pos).ctx
+            ),
+        )
 
         if self.query:
             self.entry.set_text(self.query)
@@ -281,7 +315,11 @@ class Gui:
         self.update_simple_context_entry(None)
         self.window.present()
 
-    def add_action(self, label: str, func: Callable[[Optional[Gio.Action],Optional[GLib.Variant]],None]) -> Gio.Action:
+    def add_action(
+        self,
+        label: str,
+        func: Callable[[Optional[Gio.Action], Optional[GLib.Variant]], None],
+    ) -> Gio.Action:
         ret = Gio.SimpleAction.new(label, None)
         ret.connect("activate", func)
         self.window.add_action(ret)
@@ -299,9 +337,11 @@ class Gui:
         sctx = self.entry.get_text().strip()
         max_matches = 40
         matches = []
-        
-        if sctx is not None and sctx != '':
-            matches = sorted(filter(lambda x: sctx.lower() in x.lower(), self.db))[:max_matches]
+
+        if sctx is not None and sctx != "":
+            matches = sorted(filter(lambda x: sctx.lower() in x.lower(), self.db))[
+                :max_matches
+            ]
         if len(matches) == 0:
             self.completion.set_visible(False)
         else:
@@ -313,22 +353,22 @@ class Gui:
         if sctx in self.db:
             self.simplebtn.set_label("Emit")
             self.simplemenubtn.set_popover(self.emitmenu)
-            menu.insert(0, f"Emit password for '{sctx}'", 'win.simple')
-            menu.insert(1, f"Delete password for '{sctx}'", 'win.delete')
+            menu.insert(0, f"Emit password for '{sctx}'", "win.simple")
+            menu.insert(1, f"Delete password for '{sctx}'", "win.delete")
         elif sctx is None or sctx == "":
             self.simplebtn.set_label("Create…")
             self.simplemenubtn.set_popover(None)
-            menu.insert(0, 'Create custom password…', 'win.createcustom')
+            menu.insert(0, "Create custom password…", "win.createcustom")
         else:
             self.simplebtn.set_label("Create")
             self.simplemenubtn.set_popover(self.createmenu)
-            menu.insert(0, f"Create and emit password for '{sctx}'", 'win.create')
-            menu.insert(1, f"Create custom password for '{sctx}'", 'win.createcustom')
+            menu.insert(0, f"Create and emit password for '{sctx}'", "win.create")
+            menu.insert(1, f"Create custom password for '{sctx}'", "win.createcustom")
         self.entry.set_extra_menu(menu)
 
-
-    def simpleclicked(self, action: Optional[Gio.Action] = None,
-                      param: Optional[GLib.Variant] = None) -> None:
+    def simpleclicked(
+        self, action: Optional[Gio.Action] = None, param: Optional[GLib.Variant] = None
+    ) -> None:
         sctx = self.entry.get_text().strip()
         if sctx in self.db:
             self.selected = self.db[sctx]
@@ -343,23 +383,34 @@ class Gui:
         else:
             self.create(None)
 
-    def keypress(self, keycontroller: Gtk.EventControllerKey,
-                 key: int, code: int, mods: Gdk.ModifierType) -> None:
+    def keypress(
+        self,
+        keycontroller: Gtk.EventControllerKey,
+        key: int,
+        code: int,
+        mods: Gdk.ModifierType,
+    ) -> None:
         if key == Gdk.KEY_Escape:
             if self.completion.get_visible():
                 self.completion.set_visible(False)
             else:
                 self.app.quit()
 
-    def create(self, action: Optional[Gio.Action] = None,
-               param: Optional[GLib.Variant] = None) -> None:
+    def create(
+        self,
+        action: Optional[Gio.Action] = None,
+        param: Optional[GLib.Variant] = None,
+    ) -> None:
         sctx = self.entry.get_text().strip()
         self.selected = self.db.add(sctx)
         self.db.save()
         self.window.close()
 
-    def deleteclicked(self, action: Optional[Gio.Action] = None,
-                      param: Optional[GLib.Variant] = None) -> None:
+    def deleteclicked(
+        self,
+        action: Optional[Gio.Action] = None,
+        param: Optional[GLib.Variant] = None,
+    ) -> None:
         sctx = self.entry.get_text().strip()
         confirmation = Gtk.MessageDialog(
             transient_for=self.window,
@@ -368,6 +419,7 @@ class Gui:
             message_type=Gtk.MessageType.QUESTION,
             text="Are you sure you want to delete the password for '" + sctx + "'?",
         )
+
         def delok(_: Optional[Gtk.Widget]) -> None:
             self.db.remove(sctx)
             self.db.save()
@@ -375,14 +427,16 @@ class Gui:
             self.window.close()
 
         ok = confirmation.get_widget_for_response(Gtk.ResponseType.OK)
-        ok.connect('clicked', delok)
+        ok.connect("clicked", delok)
         cancel = confirmation.get_widget_for_response(Gtk.ResponseType.CANCEL)
-        cancel.connect('clicked', lambda x: confirmation.close())
+        cancel.connect("clicked", lambda x: confirmation.close())
         confirmation.present()
 
-    def customclicked(self,
-                      action: Optional[Gio.Action] = None,
-                      param: Optional[GLib.Variant] = None) -> None:
+    def customclicked(
+        self,
+        action: Optional[Gio.Action] = None,
+        param: Optional[GLib.Variant] = None,
+    ) -> None:
         if self.ctxentry is None or self.entry is None:
             raise Exception("Gui is not initialized")
         self.simplebox.set_visible(False)
@@ -448,19 +502,23 @@ class Gui:
         elif pos == Gtk.EntryIconPosition.SECONDARY:
             self.showhidepass()
 
-    def showhidepass(self,
-                     action: Optional[Gio.Action] = None,
-                     param: Optional[GLib.Variant] = None) -> None:
+    def showhidepass(
+        self,
+        action: Optional[Gio.Action] = None,
+        param: Optional[GLib.Variant] = None,
+    ) -> None:
         newvis = not self.passentry.get_visibility()
         self.passentry.set_visibility(newvis)
         label = "Hide password" if newvis else "Show password"
         self.passentry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, label)
         self.passmenu.remove(1)
-        self.passmenu.insert(1, f'_{label}', 'win.showpass')
+        self.passmenu.insert(1, f"_{label}", "win.showpass")
 
-    def refreshpass(self,
-                    action: Optional[Gio.Action] = None,
-                    param: Optional[GLib.Variant] = None) -> None:
+    def refreshpass(
+        self,
+        action: Optional[Gio.Action] = None,
+        param: Optional[GLib.Variant] = None,
+    ) -> None:
         pwsize = os.environ.get("IMPASS_PASSWORD", DEFAULT_NEW_PASSWORD_OCTETS)
         try:
             pwsize = int(pwsize)
