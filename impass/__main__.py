@@ -417,7 +417,7 @@ def get(args: Optional[List[str]]) -> argparse.ArgumentParser:
 
 def gui(
     args: Optional[List[str]],
-    method: Optional[str] = os.getenv("IMPASS_XPASTE", None)
+    method: Optional[str] = os.getenv("IMPASS_XPASTE", None),
 ) -> argparse.ArgumentParser:
     """Launch minimal GUI.
 
@@ -592,7 +592,7 @@ def version(args: Optional[List[str]]) -> argparse.ArgumentParser:
     """Print version."""
     parser = argparse.ArgumentParser(
         prog=PROG + " version",
-        description=version.__doc__
+        description=version.__doc__,
     )
     if args is None:
         return parser
