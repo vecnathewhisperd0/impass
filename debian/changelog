@@ -1,3 +1,9 @@
+impass (0.13.1-2) unstable; urgency=medium
+
+  * Add gpg-agent to !nocheck build-deps, to try to address #1081342
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Tue, 08 Oct 2024 14:02:59 -0400
+
 impass (0.13.1-1) unstable; urgency=medium
 
   * New upstream release

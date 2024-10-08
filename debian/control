@@ -8,6 +8,7 @@ Build-Depends:
  debhelper-compat (= 13),
  dh-exec,
  dh-python,
+ gpg-agent <!nocheck>,
  pkgconf,
  python3,
  python3-gpg,
